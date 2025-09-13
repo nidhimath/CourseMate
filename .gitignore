@@ -1,0 +1,360 @@
+# Coursemate .gitignore
+
+# ===========================================
+# ENVIRONMENT FILES
+# ===========================================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+nextjs-frontend/.env.local
+flask-backend/.env
+
+# ===========================================
+# NODE.JS / NEXT.JS
+# ===========================================
+nextjs-frontend/node_modules/
+nextjs-frontend/.next/
+nextjs-frontend/out/
+nextjs-frontend/build/
+nextjs-frontend/dist/
+nextjs-frontend/.vercel/
+nextjs-frontend/.swc/
+
+# Logs
+nextjs-frontend/npm-debug.log*
+nextjs-frontend/yarn-debug.log*
+nextjs-frontend/yarn-error.log*
+nextjs-frontend/lerna-debug.log*
+nextjs-frontend/.pnpm-debug.log*
+
+# Runtime data
+nextjs-frontend/pids
+nextjs-frontend/*.pid
+nextjs-frontend/*.seed
+nextjs-frontend/*.pid.lock
+
+# Coverage directory used by tools like istanbul
+nextjs-frontend/coverage/
+nextjs-frontend/.nyc_output
+
+# Dependency directories
+nextjs-frontend/jspm_packages/
+
+# TypeScript cache
+nextjs-frontend/*.tsbuildinfo
+
+# Optional npm cache directory
+nextjs-frontend/.npm
+
+# Optional eslint cache
+nextjs-frontend/.eslintcache
+
+# Microbundle cache
+nextjs-frontend/.rpt2_cache/
+nextjs-frontend/.rts2_cache_cjs/
+nextjs-frontend/.rts2_cache_es/
+nextjs-frontend/.rts2_cache_umd/
+
+# Optional REPL history
+nextjs-frontend/.node_repl_history
+
+# Output of 'npm pack'
+nextjs-frontend/*.tgz
+
+# Yarn Integrity file
+nextjs-frontend/.yarn-integrity
+
+# parcel-bundler cache (https://parceljs.org/)
+nextjs-frontend/.cache
+nextjs-frontend/.parcel-cache
+
+# Next.js build output
+nextjs-frontend/.next
+nextjs-frontend/out
+
+# Nuxt.js build / generate output
+nextjs-frontend/.nuxt
+nextjs-frontend/dist
+
+# Storybook build outputs
+nextjs-frontend/.out
+nextjs-frontend/.storybook-out
+
+# Temporary folders
+nextjs-frontend/tmp/
+nextjs-frontend/temp/
+
+# ===========================================
+# PYTHON / FLASK
+# ===========================================
+flask-backend/__pycache__/
+flask-backend/*.py[cod]
+flask-backend/*$py.class
+flask-backend/*.so
+flask-backend/.Python
+flask-backend/build/
+flask-backend/develop-eggs/
+flask-backend/dist/
+flask-backend/downloads/
+flask-backend/eggs/
+flask-backend/.eggs/
+flask-backend/lib/
+flask-backend/lib64/
+flask-backend/parts/
+flask-backend/sdist/
+flask-backend/var/
+flask-backend/wheels/
+flask-backend/share/python-wheels/
+flask-backend/*.egg-info/
+flask-backend/.installed.cfg
+flask-backend/*.egg
+flask-backend/MANIFEST
+
+# PyInstaller
+flask-backend/*.manifest
+flask-backend/*.spec
+
+# Installer logs
+flask-backend/pip-log.txt
+flask-backend/pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+flask-backend/htmlcov/
+flask-backend/.tox/
+flask-backend/.nox/
+flask-backend/coverage.xml
+flask-backend/*.cover
+flask-backend/*.py,cover
+flask-backend/.hypothesis/
+flask-backend/.pytest_cache/
+flask-backend/cover/
+
+# Translations
+flask-backend/*.mo
+flask-backend/*.pot
+
+# Django stuff:
+flask-backend/*.log
+flask-backend/local_settings.py
+flask-backend/db.sqlite3
+flask-backend/db.sqlite3-journal
+
+# Flask stuff:
+flask-backend/instance/
+flask-backend/.webassets-cache
+
+# Scrapy stuff:
+flask-backend/.scrapy
+
+# Sphinx documentation
+flask-backend/docs/_build/
+
+# PyBuilder
+flask-backend/.pybuilder/
+flask-backend/target/
+
+# Jupyter Notebook
+flask-backend/.ipynb_checkpoints
+
+# IPython
+flask-backend/profile_default/
+flask-backend/ipython_config.py
+
+# pyenv
+flask-backend/.python-version
+
+# pipenv
+flask-backend/Pipfile.lock
+
+# poetry
+flask-backend/poetry.lock
+
+# pdm
+flask-backend/.pdm.toml
+
+# PEP 582
+flask-backend/__pypackages__/
+
+# Celery stuff
+flask-backend/celerybeat-schedule
+flask-backend/celerybeat.pid
+
+# SageMath parsed files
+flask-backend/*.sage.py
+
+# Environments
+flask-backend/.env
+flask-backend/.venv
+flask-backend/env/
+flask-backend/venv/
+flask-backend/ENV/
+flask-backend/env.bak/
+flask-backend/venv.bak/
+
+# Spyder project settings
+flask-backend/.spyderproject
+flask-backend/.spyproject
+
+# Rope project settings
+flask-backend/.ropeproject
+
+# mkdocs documentation
+flask-backend/site
+
+# mypy
+flask-backend/.mypy_cache/
+flask-backend/.dmypy.json
+flask-backend/dmypy.json
+
+# Pyre type checker
+flask-backend/.pyre/
+
+# pytype static type analyzer
+flask-backend/.pytype/
+
+# Cython debug symbols
+flask-backend/cython_debug/
+
+# ===========================================
+# DATABASE
+# ===========================================
+*.db
+*.sqlite
+*.sqlite3
+flask-backend/coursemate.db
+flask-backend/instance/
+
+# ===========================================
+# OPERATING SYSTEM
+# ===========================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+*.bak
+*.swp
+*~.nib
+local.properties
+.settings/
+.loadpath
+.recommenders
+.target/
+.metadata
+.factorypath
+.buildpath
+.project
+.classpath
+*.launch
+.pydevproject
+.cproject
+.autotools
+.factorypath
+.buildpath
+.target
+.tern-project
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+# ===========================================
+# IDE / EDITORS
+# ===========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.metadata
+.classpath
+.settings/
+.loadpath
+.target/
+.recommenders/
+.factorypath
+.buildpath
+.pydevproject
+.cproject
+.autotools
+.tern-project
+*.iml
+*.ipr
+*.iws
+
+# ===========================================
+# LOGS
+# ===========================================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# ===========================================
+# TEMPORARY FILES
+# ===========================================
+tmp/
+temp/
+.tmp/
+.temp/
+
+# ===========================================
+# TEST FILES
+# ===========================================
+test-oauth.js
+test-setup.py
+
+# ===========================================
+# DOCKER (if used)
+# ===========================================
+.dockerignore
+docker-compose.override.yml
+
+# ===========================================
+# MISC
+# ===========================================
+*.tgz
+*.tar.gz
+*.zip
+*.rar
+*.7z
