@@ -1,353 +1,336 @@
 'use client'
 
-import React, { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
-import { Progress } from './ui/progress'
-import { X, BookOpen, Video, ExternalLink } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 
-interface Node {
+interface CourseNode {
   id: string
-  label: string
-  type: 'current' | 'prerequisite' | 'concept'
-  x: number
-  y: number
+  name: string
+  category: string
   completed: boolean
-  course: string
+  current: boolean
+  prerequisites: string[]
 }
 
-export default function KnowledgeGraph() {
-  const [selectedNode, setSelectedNode] = useState<Node | null>(null)
-  const svgRef = useRef<SVGSVGElement>(null)
-  const router = useRouter()
+interface KnowledgeGraphProps {
+  courses?: CourseNode[]
+}
 
-  const nodes: Node[] = [
-    // CS 170 Current Topics
-    { id: 'dijkstra', label: 'Dijkstra\'s Algorithm', type: 'current', x: 400, y: 200, completed: false, course: 'CS 170' },
-    { id: 'dynamic-prog', label: 'Dynamic Programming', type: 'current', x: 600, y: 150, completed: true, course: 'CS 170' },
-    { id: 'graph-algorithms', label: 'Graph Algorithms', type: 'current', x: 500, y: 100, completed: false, course: 'CS 170' },
-    { id: 'network-flow', label: 'Network Flow', type: 'current', x: 700, y: 200, completed: false, course: 'CS 170' },
-    
-    // Prerequisites from CS 61B
-    { id: 'bfs-dfs', label: 'BFS/DFS', type: 'prerequisite', x: 200, y: 150, completed: true, course: 'CS 61B' },
-    { id: 'trees', label: 'Trees & BSTs', type: 'prerequisite', x: 150, y: 250, completed: true, course: 'CS 61B' },
-    { id: 'hashmaps', label: 'Hash Maps', type: 'prerequisite', x: 300, y: 300, completed: true, course: 'CS 61B' },
-    { id: 'priority-queues', label: 'Priority Queues', type: 'prerequisite', x: 250, y: 100, completed: true, course: 'CS 61B' },
-    
-    // Supporting Concepts
-    { id: 'recursion', label: 'Recursion', type: 'concept', x: 100, y: 200, completed: true, course: 'CS 61A' },
-    { id: 'big-o', label: 'Big O Analysis', type: 'concept', x: 350, y: 50, completed: true, course: 'CS 61B' },
-  ]
+export default function KnowledgeGraph({ courses: propCourses }: KnowledgeGraphProps) {
+  const { data: session } = useSession()
+  const [courses, setCourses] = useState<CourseNode[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
-  const edges = [
-    // Prerequisites to current topics
-    { from: 'bfs-dfs', to: 'dijkstra' },
-    { from: 'bfs-dfs', to: 'graph-algorithms' },
-    { from: 'priority-queues', to: 'dijkstra' },
-    { from: 'trees', to: 'dynamic-prog' },
-    { from: 'hashmaps', to: 'dynamic-prog' },
-    { from: 'graph-algorithms', to: 'network-flow' },
-    { from: 'dijkstra', to: 'network-flow' },
-    
-    // Foundational concepts
-    { from: 'recursion', to: 'bfs-dfs' },
-    { from: 'recursion', to: 'trees' },
-    { from: 'big-o', to: 'graph-algorithms' },
-    { from: 'big-o', to: 'dynamic-prog' },
-  ]
-
-  const getNodeColor = (node: Node) => {
-    if (node.type === 'current') {
-      return node.completed ? '#22c55e' : '#3b82f6' // green if completed, blue if current
+  useEffect(() => {
+    if (propCourses) {
+      setCourses(propCourses)
+      setLoading(false)
+    } else {
+      fetchCourses()
     }
-    if (node.type === 'prerequisite') {
-      return '#10b981' // teal for prerequisites
-    }
-    return '#8b5cf6' // purple for concepts
-  }
+  }, [propCourses])
 
-  const getNodeDetails = (node: Node) => {
-    const details = {
-      'dijkstra': {
-        description: 'Find shortest paths in weighted graphs using a greedy approach, similar to how we used priority queues in CS 61B.',
-        prerequisites: ['BFS/DFS', 'Priority Queues'],
-        videos: ['Berkeley CS170 Lecture 12', 'Dijkstra Visualization'],
-        progress: 0,
-        lessons: 5
-      },
-      'dynamic-prog': {
-        description: 'Break problems into subproblems and build solutions bottom-up, like the recursive thinking from CS 61A but with memoization.',
-        prerequisites: ['Trees & BSTs', 'Hash Maps'],
-        videos: ['Berkeley CS170 Lecture 15', 'DP Patterns'],
-        progress: 100,
-        lessons: 4
-      },
-      'graph-algorithms': {
-        description: 'Advanced graph traversal and analysis techniques building on BFS/DFS foundations from CS 61B.',
-        prerequisites: ['BFS/DFS', 'Big O Analysis'],
-        videos: ['Berkeley CS170 Lecture 10', 'Graph Theory Basics'],
-        progress: 25,
-        lessons: 6
-      },
-      'network-flow': {
-        description: 'Model flow problems as graphs and find maximum flow, combining graph algorithms with optimization.',
-        prerequisites: ['Graph Algorithms', 'Dijkstra\'s Algorithm'],
-        videos: ['Berkeley CS170 Lecture 18', 'Max Flow Applications'],
-        progress: 0,
-        lessons: 3
+  const fetchCourses = async () => {
+    try {
+      if (!session?.user?.email) {
+        setError('Please sign in to view the knowledge graph')
+        setLoading(false)
+        return
       }
-    }
-    
-    return details[node.id as keyof typeof details] || {
-      description: `Foundation concept from ${node.course}`,
-      prerequisites: [],
-      videos: [],
-      progress: 100,
-      lessons: 0
+
+      // First, authenticate with the backend to get a JWT token
+      const authResponse = await fetch('http://localhost:5001/api/auth/google', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: session.user.email,
+          name: session.user.name,
+          image: session.user.image,
+          google_id: session.user.email,
+        }),
+      })
+
+      if (!authResponse.ok) {
+        throw new Error('Authentication failed')
+      }
+
+      const authData = await authResponse.json()
+      const token = authData.access_token
+
+      // Now fetch courses with the JWT token
+      const response = await fetch('http://localhost:5001/api/transcript/curriculum', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        // Transform the data to match our CourseNode interface
+        const transformedCourses: CourseNode[] = []
+        
+        // Add completed courses
+        data.completed_courses?.forEach((course: any) => {
+          const courseCode = typeof course === 'string' ? course : course.course_code
+          const courseInfo = data.course_details?.[courseCode] || {}
+          transformedCourses.push({
+            id: courseCode,
+            name: courseCode,
+            category: courseInfo.category || 'Other',
+            completed: true,
+            current: false,
+            prerequisites: courseInfo.prerequisites || []
+          })
+        })
+
+        // Add current courses
+        data.current_courses?.forEach((courseCode: string) => {
+          const courseInfo = data.course_details?.[courseCode] || {}
+          transformedCourses.push({
+            id: courseCode,
+            name: courseCode,
+            category: courseInfo.category || 'Other',
+            completed: false,
+            current: true,
+            prerequisites: courseInfo.prerequisites || []
+          })
+        })
+
+        setCourses(transformedCourses)
+      } else {
+        const errorData = await response.json()
+        setError(errorData.error || 'Failed to load courses')
+      }
+    } catch (error) {
+      setError('Network error. Please try again.')
+      console.error('Knowledge graph fetch error:', error)
+    } finally {
+      setLoading(false)
     }
   }
 
-  const handleNodeClick = (node: Node) => {
-    if (node.type === 'current') {
-      router.push(`/class/cs170/lesson/cs170-shortest-paths`)
+  const getCategoryColor = (category: string) => {
+    const colors: Record<string, string> = {
+      'CS Core': 'bg-blue-100 text-blue-800',
+      'CS Software': 'bg-green-100 text-green-800',
+      'CS Theory': 'bg-purple-100 text-purple-800',
+      'CS Hardware': 'bg-orange-100 text-orange-800',
+      'CS Applications': 'bg-pink-100 text-pink-800',
+      'EE Foundation': 'bg-indigo-100 text-indigo-800',
+      'EE Signals': 'bg-cyan-100 text-cyan-800',
+      'EE Robotics': 'bg-emerald-100 text-emerald-800',
+      'EE Circuits': 'bg-amber-100 text-amber-800',
+      'EE Power': 'bg-red-100 text-red-800',
+      'EE Devices': 'bg-violet-100 text-violet-800',
+      'EE Optics': 'bg-teal-100 text-teal-800',
+      'Physics': 'bg-gray-100 text-gray-800',
     }
-    setSelectedNode(node)
+    return colors[category] || 'bg-gray-100 text-gray-800'
+  }
+
+  const getNodeColor = (course: CourseNode) => {
+    if (course.completed) return '#10b981' // green
+    if (course.current) return '#3b82f6' // blue
+    return '#6b7280' // gray
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading knowledge graph...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-red-600">{error}</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (courses.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <p className="text-gray-600">No courses found. Please upload your transcript first.</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-yellow-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-blue-100">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-yellow-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">C</span>
-              </div>
-              <h1 className="text-xl text-blue-900">Coursemate</h1>
-              <span className="text-sm text-blue-600 bg-blue-100 px-2 py-1 rounded-full">UC Berkeley</span>
-            </div>
-            
-            <nav className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={() => router.push('/')}
-                className="text-blue-700 hover:bg-blue-100"
-              >
-                Dashboard
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => router.push('/progress')}
-                className="text-blue-700 hover:bg-blue-100"
-              >
-                Progress
-              </Button>
-            </nav>
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-yellow-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-blue-900 mb-2">Course Knowledge Graph</h1>
+          <p className="text-blue-700">
+            Visualize the relationships between your courses and their prerequisites
+          </p>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
-        <div className="space-y-6">
-          <div className="text-center space-y-2">
-            <h2 className="text-2xl text-blue-900">CS 170 Knowledge Graph</h2>
-            <p className="text-blue-700">
-              Explore how current topics connect to your successful CS 61B foundation
-            </p>
-          </div>
+        {/* Legend */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Legend</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                <span className="text-sm">Completed</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                <span className="text-sm">Current</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-gray-500 rounded-full"></div>
+                <span className="text-sm">Available</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Graph Visualization */}
-            <div className="lg:col-span-2">
-              <Card className="h-[600px]">
-                <CardHeader>
-                  <CardTitle className="text-blue-900">Concept Map</CardTitle>
-                </CardHeader>
-                <CardContent className="p-0 h-full">
-                  <svg
-                    ref={svgRef}
-                    width="100%"
-                    height="500"
-                    viewBox="0 0 800 400"
-                    className="border rounded-lg bg-gradient-to-br from-blue-50 to-yellow-50"
-                  >
-                    {/* Edges */}
-                    {edges.map((edge, idx) => {
-                      const fromNode = nodes.find(n => n.id === edge.from)
-                      const toNode = nodes.find(n => n.id === edge.to)
-                      if (!fromNode || !toNode) return null
-                      
-                      return (
-                        <line
-                          key={idx}
-                          x1={fromNode.x}
-                          y1={fromNode.y}
-                          x2={toNode.x}
-                          y2={toNode.y}
-                          stroke="#cbd5e1"
-                          strokeWidth="2"
-                          strokeDasharray={fromNode.type === 'prerequisite' ? '5,5' : 'none'}
-                        />
-                      )
-                    })}
-                    
-                    {/* Nodes */}
-                    {nodes.map((node) => (
-                      <g key={node.id}>
-                        <circle
-                          cx={node.x}
-                          cy={node.y}
-                          r="20"
-                          fill={getNodeColor(node)}
-                          stroke="white"
-                          strokeWidth="3"
-                          className="cursor-pointer hover:opacity-80 transition-opacity"
-                          onClick={() => handleNodeClick(node)}
-                        />
-                        {node.completed && (
-                          <text
-                            x={node.x}
-                            y={node.y + 5}
-                            textAnchor="middle"
-                            fill="white"
-                            fontSize="12"
-                            fontWeight="bold"
-                          >
-                            ✓
-                          </text>
-                        )}
-                        <text
-                          x={node.x}
-                          y={node.y + 35}
-                          textAnchor="middle"
-                          fill="#1e40af"
-                          fontSize="12"
-                          fontWeight="medium"
-                          className="pointer-events-none"
-                        >
-                          {node.label}
-                        </text>
-                      </g>
-                    ))}
-                  </svg>
+        {/* SVG Knowledge Graph */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Course Prerequisites Network</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="w-full h-96 border rounded-lg bg-white overflow-hidden">
+              <svg width="100%" height="100%" viewBox="0 0 800 400">
+                {courses.map((course, index) => {
+                  const x = 100 + (index % 4) * 150
+                  const y = 100 + Math.floor(index / 4) * 100
                   
-                  {/* Legend */}
-                  <div className="flex justify-center space-x-6 mt-4 text-sm">
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-                      <span className="text-blue-700">Current Topic</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 bg-teal-500 rounded-full"></div>
-                      <span className="text-blue-700">Prerequisite (CS 61B)</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 bg-purple-500 rounded-full"></div>
-                      <span className="text-blue-700">Foundation (CS 61A)</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                      <span className="text-blue-700">Completed</span>
+                  return (
+                    <g key={course.id}>
+                      {/* Course node */}
+                      <circle
+                        cx={x}
+                        cy={y}
+                        r="20"
+                        fill={getNodeColor(course)}
+                        stroke="#fff"
+                        strokeWidth="2"
+                      />
+                      
+                      {/* Course label */}
+                      <text
+                        x={x}
+                        y={y + 35}
+                        textAnchor="middle"
+                        className="text-xs font-medium fill-gray-700"
+                      >
+                        {course.name}
+                      </text>
+
+                      {/* Prerequisite connections */}
+                      {course.prerequisites.map((prereq) => {
+                        const prereqCourse = courses.find(c => c.name === prereq)
+                        if (!prereqCourse) return null
+
+                        const prereqIndex = courses.findIndex(c => c.name === prereq)
+                        const prereqX = 100 + (prereqIndex % 4) * 150
+                        const prereqY = 100 + Math.floor(prereqIndex / 4) * 100
+
+                        return (
+                          <line
+                            key={`${course.id}-${prereq}`}
+                            x1={prereqX}
+                            y1={prereqY}
+                            x2={x}
+                            y2={y}
+                            stroke="#94a3b8"
+                            strokeWidth="2"
+                            markerEnd="url(#arrowhead)"
+                          />
+                        )
+                      })}
+                    </g>
+                  )
+                })}
+
+                {/* Arrow marker definition */}
+                <defs>
+                  <marker
+                    id="arrowhead"
+                    markerWidth="10"
+                    markerHeight="7"
+                    refX="9"
+                    refY="3.5"
+                    orient="auto"
+                  >
+                    <polygon
+                      points="0 0, 10 3.5, 0 7"
+                      fill="#94a3b8"
+                    />
+                  </marker>
+                </defs>
+              </svg>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Course Details */}
+        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {courses.map((course) => (
+            <Card key={course.id} className="hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg">{course.name}</CardTitle>
+                  <div className="flex gap-2">
+                    {course.completed && (
+                      <Badge className="bg-green-100 text-green-800">Completed</Badge>
+                    )}
+                    {course.current && (
+                      <Badge className="bg-blue-100 text-blue-800">Current</Badge>
+                    )}
+                    <Badge className={getCategoryColor(course.category)}>
+                      {course.category}
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {course.prerequisites.length > 0 && (
+                  <div>
+                    <div className="text-sm font-medium text-gray-600 mb-1">Prerequisites:</div>
+                    <div className="flex flex-wrap gap-1">
+                      {course.prerequisites.map((prereq) => (
+                        <Badge
+                          key={prereq}
+                          variant="secondary"
+                          className="text-xs"
+                        >
+                          {prereq}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Side Panel */}
-            <div className="space-y-4">
-              {selectedNode ? (
-                <Card>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-blue-900">{selectedNode.label}</CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedNode(null)}
-                      >
-                        <X className="w-4 h-4" />
-                      </Button>
-                    </div>
-                    <Badge className={`w-fit ${
-                      selectedNode.type === 'current' ? 'bg-blue-100 text-blue-800' :
-                      selectedNode.type === 'prerequisite' ? 'bg-teal-100 text-teal-800' :
-                      'bg-purple-100 text-purple-800'
-                    }`}>
-                      {selectedNode.course}
-                    </Badge>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <p className="text-sm text-blue-700">
-                      {getNodeDetails(selectedNode).description}
-                    </p>
-                    
-                    {selectedNode.type === 'current' && (
-                      <div className="space-y-3">
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-sm">
-                            <span className="text-blue-700">Progress</span>
-                            <span className="text-blue-900">{getNodeDetails(selectedNode).progress}%</span>
-                          </div>
-                          <Progress value={getNodeDetails(selectedNode).progress} className="h-2" />
-                        </div>
-                        
-                        <Button 
-                          onClick={() => handleNodeClick(selectedNode)}
-                          className="w-full bg-blue-600 hover:bg-blue-700"
-                        >
-                          <BookOpen className="w-4 h-4 mr-2" />
-                          Start Learning
-                        </Button>
-                      </div>
-                    )}
-                    
-                    {getNodeDetails(selectedNode).prerequisites.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-blue-900">Prerequisites</h4>
-                        <div className="space-y-1">
-                          {getNodeDetails(selectedNode).prerequisites.map((prereq, idx) => (
-                            <div key={idx} className="flex items-center text-sm text-blue-700">
-                              <span className="w-2 h-2 bg-blue-500 rounded-full mr-2"></span>
-                              {prereq}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
-                    {getNodeDetails(selectedNode).videos.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="font-medium text-blue-900">Resources</h4>
-                        <div className="space-y-2">
-                          {getNodeDetails(selectedNode).videos.map((video, idx) => (
-                            <Button key={idx} variant="outline" size="sm" className="w-full justify-start">
-                              <Video className="w-3 h-3 mr-2" />
-                              {video}
-                              <ExternalLink className="w-3 h-3 ml-auto" />
-                            </Button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ) : (
-                <Card>
-                  <CardContent className="pt-6 text-center text-blue-700">
-                    <BookOpen className="w-12 h-12 mx-auto mb-3 text-blue-400" />
-                    <p>Click on any node to see detailed information and start learning!</p>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
         </div>
-      </main>
+      </div>
     </div>
   )
 }
