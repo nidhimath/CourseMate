@@ -8,6 +8,7 @@ import { Badge } from './ui/badge'
 import { Progress } from './ui/progress'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog'
 import { ArrowLeft, ChevronDown, ChevronUp, Video, ExternalLink, HelpCircle, CheckCircle, Play, Lightbulb, Target, BookOpen, Zap } from 'lucide-react'
+import { dataService, Lesson } from '@/lib/dataService'
 
 interface LessonViewProps {
   lessonId: string
@@ -45,10 +46,33 @@ export default function LessonView({ lessonId, classId }: LessonViewProps) {
     selectedText: ''
   })
   const [completedItems, setCompletedItems] = useState<Set<string>>(new Set(['concept-1', 'concept-2', 'exercise-1']))
+  const [lesson, setLesson] = useState<Lesson | null>(null)
+  const [lessonContent, setLessonContent] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const contentRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  const lessonData = {
+  useEffect(() => {
+    const fetchLessonData = async () => {
+      try {
+        const [lessonData, contentData] = await Promise.all([
+          dataService.getLesson(lessonId),
+          dataService.getLessonContent(lessonId)
+        ])
+        setLesson(lessonData)
+        setLessonContent(contentData)
+      } catch (error) {
+        console.error('Failed to fetch lesson data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchLessonData()
+  }, [lessonId])
+
+  // Fallback lesson content for development
+  const fallbackLessonContent = {
     'cs170-shortest-paths': {
       title: 'Dijkstra\'s Algorithm',
       description: 'Learn shortest path algorithms using familiar concepts from CS 61B',
@@ -78,71 +102,12 @@ The key insight: always process the **closest unvisited vertex** next. This gree
           ],
           cs61bConnection: 'Remember your BFS implementation from CS 61B? Dijkstra\'s is almost identical, just swap the queue for a priority queue!',
           completed: true
-        },
-        {
-          id: 'concept-2',
-          type: 'concept' as const,
-          title: 'The Algorithm Step-by-Step',
-          content: `Here's how Dijkstra's works, broken down like the **step-by-step debugging** we practiced in CS 61B:
-
-1. **Initialize**: Set distance to source as 0, all others as infinity (like initializing your distance array in BFS)
-2. **Priority Queue**: Add all vertices to a min-heap ordered by distance (remember **MinPQ** from your data structures?)
-3. **Extract minimum**: Remove the vertex with smallest distance (like \`removeMin()\` in your heap implementation)
-4. **Relax edges**: For each neighbor, check if going through current vertex gives a shorter path
-5. **Update distances**: If shorter path found, update distance and parent (like updating your \`distTo\` array)
-
-The **relaxation** step is key - it's like updating your best path when you find a better route, similar to how you updated shortest paths in your graph algorithms project.`,
-          analogy: 'This is exactly like your CS 61B shortest path lab, but now we\'re using edge weights instead of uniform costs!',
-          completed: true
-        },
-        {
-          id: 'exercise-2',
-          type: 'exercise' as const,
-          title: '📝 Trace Dijkstra\'s Algorithm',
-          problem: 'Given the weighted graph below, trace Dijkstra\'s algorithm starting from vertex A. Show the priority queue state and distance updates at each step.',
-          hints: [
-            'Start with distance[A] = 0, all others = ∞',
-            'Use a priority queue to always process the closest unvisited vertex',
-            'For each vertex, relax all outgoing edges',
-            'Update the priority queue when distances change'
-          ],
-          solution: 'Step 1: Initialize distances, Step 2: Process vertex A, Step 3: Relax edges A→B, A→C...',
-          cs61bConnection: 'This is exactly like tracing BFS, but we prioritize by distance instead of discovery order.',
-          completed: false
-        },
-        {
-          id: 'concept-3',
-          type: 'concept' as const,
-          title: 'Why the Greedy Choice Works',
-          content: `The greedy property of Dijkstra's algorithm might seem surprising at first. Why does always choosing the **closest unvisited vertex** guarantee the optimal solution?
-
-The proof relies on a **contradiction argument** (like the proof techniques from your algorithm analysis in CS 61B). Suppose there's a shorter path to a vertex we just processed. This path must go through some unvisited vertex, but since we always choose the closest unvisited vertex, any path through an unvisited vertex must be longer.
-
-This is similar to the **greedy approach** in your CS 61B MST (Minimum Spanning Tree) algorithms - Prim's and Kruskal's algorithms also make locally optimal choices that lead to globally optimal solutions.
-
-Remember the **cut property** from graph theory? Dijkstra's leverages a similar principle for shortest paths.`,
-          analogy: 'Just like how Prim\'s MST algorithm greedily chose the minimum weight edge crossing the cut, Dijkstra greedily chooses the minimum distance vertex.',
-          completed: false
-        },
-        {
-          id: 'exercise-3',
-          type: 'exercise' as const,
-          title: '🧠 Proof Challenge',
-          problem: 'Prove that when Dijkstra\'s algorithm selects a vertex u with distance d, no shorter path to u can exist. Use contradiction.',
-          hints: [
-            'Assume there exists a shorter path to u',
-            'This path must go through some unvisited vertex v',
-            'But we chose u because it had minimum distance among unvisited vertices',
-            'This leads to a contradiction'
-          ],
-          cs61bConnection: 'Remember proving correctness of algorithms in CS 61B? Same approach - assume the opposite and find a contradiction.',
-          completed: false
         }
       ]
     }
   }
 
-  const currentLesson = lessonData[lessonId as keyof typeof lessonData] || lessonData['cs170-shortest-paths']
+  const currentLesson = lessonContent || fallbackLessonContent[lessonId as keyof typeof fallbackLessonContent] || fallbackLessonContent['cs170-shortest-paths']
 
   useEffect(() => {
     const handleTextSelection = () => {
@@ -229,6 +194,31 @@ Remember the **cut property** from graph theory? Dijkstra's leverages a similar 
     router.push(`/class/${classId}`)
   }
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-yellow-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-blue-700">Loading lesson data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!lesson || !currentLesson) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-yellow-50 flex items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl text-blue-900 mb-4">Lesson not found</h2>
+          <Button onClick={handleBack} className="bg-blue-600 hover:bg-blue-700">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Course
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   const totalItems = currentLesson.items.length
   const completedCount = currentLesson.items.filter(item => completedItems.has(item.id)).length
   const progressPercentage = Math.round((completedCount / totalItems) * 100)
@@ -277,10 +267,19 @@ Remember the **cut property** from graph theory? Dijkstra's leverages a similar 
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 Back
               </Button>
-              <div>
-                <h2 className="text-2xl text-blue-900">{currentLesson.title}</h2>
-                <p className="text-blue-700">{currentLesson.description}</p>
-              </div>
+               <div>
+                 <h2 className="text-2xl text-blue-900">{currentLesson.title}</h2>
+                 <p className="text-blue-700">{currentLesson.description}</p>
+                 {lesson && (
+                   <div className="flex items-center space-x-4 mt-2 text-sm text-blue-600">
+                     <span>{lesson.duration} min</span>
+                     <span>•</span>
+                     <span>{lesson.difficulty}</span>
+                     <span>•</span>
+                     <span>Week {lesson.week}</span>
+                   </div>
+                 )}
+               </div>
             </div>
             
             <div className="text-right">
