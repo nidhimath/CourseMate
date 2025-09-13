@@ -1,8 +1,13 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from models import User, Course, Lesson, Progress, Concept, Exercise, db
+from models import User, Course, Lesson, Progress, Concept, Exercise, UserCourse, db
+from transcript_parser import TranscriptParser
+from course_data import get_course_info, get_available_courses, get_missing_prerequisites
 from datetime import datetime
 import json
+import os
+import tempfile
+import pdfplumber
 
 # Authentication Blueprint
 auth_bp = Blueprint('auth', __name__)
@@ -42,7 +47,7 @@ def google_auth():
             db.session.commit()
         
         # Create JWT token
-        access_token = create_access_token(identity=user.id)
+        access_token = create_access_token(identity=str(user.id))
         
         return jsonify({
             'access_token': access_token,
@@ -232,6 +237,217 @@ def update_progress():
         db.session.commit()
         
         return jsonify(progress.to_dict()), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Transcript and Curriculum Blueprint
+transcript_bp = Blueprint('transcript', __name__)
+
+@transcript_bp.route('/upload', methods=['POST'])
+@jwt_required()
+def upload_transcript():
+    """Upload and parse transcript PDF"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if file was uploaded
+        if 'transcript_pdf' not in request.files:
+            return jsonify({'error': 'No PDF file uploaded'}), 400
+        
+        file = request.files['transcript_pdf']
+        
+        if file.filename == '':
+            return jsonify({'error': 'No file selected'}), 400
+        
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({'error': 'File must be a PDF'}), 400
+        
+        # Save file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+            file.save(temp_file.name)
+            temp_file_path = temp_file.name
+        
+        try:
+            # Extract text from PDF
+            transcript_text = ""
+            with pdfplumber.open(temp_file_path) as pdf:
+                for page in pdf.pages:
+                    page_text = page.extract_text()
+                    if page_text:
+                        transcript_text += page_text + "\n"
+            
+            if not transcript_text.strip():
+                return jsonify({'error': 'Could not extract text from PDF. Please ensure the PDF contains readable text.'}), 400
+            
+            # Parse the transcript
+            parser = TranscriptParser()
+            parsed_data = parser.parse_transcript(transcript_text)
+            
+            # Update user with transcript data
+            user.transcript_uploaded = True
+            user.transcript_data = json.dumps(parsed_data)
+            user.updated_at = datetime.utcnow()
+            
+            # Clear existing user courses
+            UserCourse.query.filter_by(user_id=user_id).delete()
+            
+            # Add completed courses
+            for course_data in parsed_data['completed_courses']:
+                if isinstance(course_data, dict):
+                    # New format with grade information
+                    course_code = course_data['course_code']
+                    grade = course_data.get('grade', 'N/A')
+                else:
+                    # Legacy format (string)
+                    course_code = course_data
+                    grade = 'N/A'
+                
+                user_course = UserCourse(
+                    user_id=user_id,
+                    course_code=course_code,
+                    status='completed',
+                    grade=grade
+                )
+                db.session.add(user_course)
+            
+            # Add current courses
+            for course_code in parsed_data['current_courses']:
+                user_course = UserCourse(
+                    user_id=user_id,
+                    course_code=course_code,
+                    status='current'
+                )
+                db.session.add(user_course)
+            
+            db.session.commit()
+            
+            return jsonify({
+                'message': 'Transcript uploaded and parsed successfully',
+                'parsed_data': parsed_data
+            }), 200
+            
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_file_path):
+                os.unlink(temp_file_path)
+        
+    except Exception as e:
+        return jsonify({'error': f'Error processing PDF: {str(e)}'}), 500
+
+@transcript_bp.route('/curriculum', methods=['GET'])
+@jwt_required()
+def get_curriculum():
+    """Get personalized curriculum based on transcript"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if not user.transcript_uploaded:
+            return jsonify({'error': 'No transcript uploaded'}), 400
+        
+        # Parse transcript data
+        transcript_data = json.loads(user.transcript_data)
+        completed_courses = transcript_data['completed_courses']
+        current_courses = transcript_data['current_courses']
+        
+        # Generate curriculum plan
+        parser = TranscriptParser()
+        curriculum_plan = parser.generate_curriculum_plan(completed_courses, current_courses)
+        
+        # Mark curriculum as generated
+        user.curriculum_generated = True
+        db.session.commit()
+        
+        return jsonify(curriculum_plan), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@transcript_bp.route('/courses', methods=['GET'])
+@jwt_required()
+def get_user_courses():
+    """Get user's courses (completed, current, planned)"""
+    try:
+        user_id = get_jwt_identity()
+        user_courses = UserCourse.query.filter_by(user_id=user_id).all()
+        
+        courses_data = {
+            'completed': [],
+            'current': [],
+            'planned': []
+        }
+        
+        for user_course in user_courses:
+            course_info = get_course_info(user_course.course_code)
+            course_data = {
+                'course_code': user_course.course_code,
+                'status': user_course.status,
+                'grade': user_course.grade,
+                'semester': user_course.semester,
+                'units': user_course.units,
+                'website': course_info['website'],
+                'category': course_info['category'],
+                'prerequisites': course_info['prerequisites']
+            }
+            courses_data[user_course.status].append(course_data)
+        
+        return jsonify(courses_data), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@transcript_bp.route('/recommendations', methods=['GET'])
+@jwt_required()
+def get_recommendations():
+    """Get course recommendations based on completed courses"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user or not user.transcript_uploaded:
+            return jsonify({'error': 'No transcript uploaded'}), 400
+        
+        # Parse transcript data
+        transcript_data = json.loads(user.transcript_data)
+        completed_courses = transcript_data['completed_courses']
+        current_courses = transcript_data['current_courses']
+        
+        # Get available courses
+        available_courses = get_available_courses(completed_courses)
+        available_courses = [course for course in available_courses if course not in current_courses]
+        
+        # Generate recommendations
+        parser = TranscriptParser()
+        recommended_courses = parser._get_recommended_courses(available_courses, completed_courses)
+        
+        # Get detailed information for recommendations
+        recommendations = []
+        for course_code in recommended_courses[:10]:  # Top 10 recommendations
+            course_info = get_course_info(course_code)
+            missing_prereqs = get_missing_prerequisites(course_code, completed_courses)
+            
+            recommendations.append({
+                'course_code': course_code,
+                'website': course_info['website'],
+                'category': course_info['category'],
+                'prerequisites': course_info['prerequisites'],
+                'missing_prerequisites': missing_prereqs,
+                'can_take': len(missing_prereqs) == 0
+            })
+        
+        return jsonify({
+            'recommendations': recommendations,
+            'completed_courses': completed_courses,
+            'current_courses': current_courses
+        }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500

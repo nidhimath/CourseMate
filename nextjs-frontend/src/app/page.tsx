@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import Dashboard from '@/components/Dashboard'
+import SimpleDashboard from '@/components/SimpleDashboard'
 
 export default async function Home() {
   const session = await getServerSession(authOptions)
@@ -10,5 +10,5 @@ export default async function Home() {
     redirect('/auth/signin')
   }
 
-  return <Dashboard />
+  return <SimpleDashboard />
 }

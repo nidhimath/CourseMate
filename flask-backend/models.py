@@ -11,6 +11,9 @@ class User(db.Model):
     name = db.Column(db.String(100), nullable=False)
     image_url = db.Column(db.String(200))
     google_id = db.Column(db.String(100), unique=True)
+    transcript_uploaded = db.Column(db.Boolean, default=False)
+    transcript_data = db.Column(db.Text, nullable=True)  # JSON string of parsed transcript
+    curriculum_generated = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -139,6 +142,32 @@ class Exercise(db.Model):
             'order': self.order,
             'cs61b_connection': self.cs61b_connection,
             'created_at': self.created_at.isoformat()
+        }
+
+class UserCourse(db.Model):
+    __tablename__ = 'user_courses'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_code = db.Column(db.String(20), nullable=False)  # CS61A, EECS16A, etc.
+    status = db.Column(db.String(20), nullable=False)  # completed, current, planned
+    grade = db.Column(db.String(5), nullable=True)  # A+, A, B+, etc.
+    semester = db.Column(db.String(20), nullable=True)  # Fall 2024, Spring 2025, etc.
+    units = db.Column(db.Integer, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'course_code': self.course_code,
+            'status': self.status,
+            'grade': self.grade,
+            'semester': self.semester,
+            'units': self.units,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
         }
 
 class Progress(db.Model):

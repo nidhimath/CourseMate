@@ -1,35 +1,56 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useSession, signOut } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Progress } from './ui/progress'
-import { BookOpen, Star, Clock, TrendingUp, Award, ChevronRight, LogOut } from 'lucide-react'
-import { dataService, Course } from '@/lib/dataService'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
+import { BookOpen, Star, Clock, TrendingUp, Award, ChevronRight, LogOut, Upload, GraduationCap } from 'lucide-react'
+import TranscriptUpload from './TranscriptUpload'
+import PersonalizedCurriculum from './PersonalizedCurriculum'
 
 export default function Dashboard() {
   const { data: session } = useSession()
   const router = useRouter()
-  const [courses, setCourses] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
+  const [hasTranscript, setHasTranscript] = useState(false)
+  const [curriculumData, setCurriculumData] = useState(null)
 
   useEffect(() => {
-    const fetchCourses = async () => {
-      try {
-        const coursesData = await dataService.getCourses()
-        setCourses(coursesData)
-      } catch (error) {
-        console.error('Failed to fetch courses:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCourses()
+    checkTranscriptStatus()
   }, [])
+
+  const checkTranscriptStatus = async () => {
+    try {
+      const response = await fetch('http://localhost:5001/api/transcript/curriculum', {
+        headers: {
+          'Authorization': `Bearer ${session?.accessToken}`,
+        },
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setHasTranscript(true)
+        setCurriculumData(data)
+      }
+    } catch (error) {
+      // No transcript uploaded yet
+      setHasTranscript(false)
+    }
+  }
+
+  const handleTranscriptUpload = (data: any) => {
+    setHasTranscript(true)
+    setCurriculumData(data)
+  }
+
+  const currentClasses = [
+    { id: 'cs170', name: 'CS 170: Algorithms', progress: 75, status: 'active' },
+    { id: 'eecs16a', name: 'EECS 16A: Circuits', progress: 60, status: 'active' },
+    { id: 'math54', name: 'Math 54: Linear Algebra', progress: 90, status: 'active' },
+  ]
 
   const transcript = [
     { semester: 'Fall 2023', courses: [
@@ -44,7 +65,7 @@ export default function Dashboard() {
     ]},
   ]
 
-  const focusClass = courses[0] // First course as current focus
+  const focusClass = currentClasses[0] // CS 170 as current focus
 
   const getGradeColor = (grade: string) => {
     if (grade.startsWith('A')) return 'bg-green-100 text-green-800'
@@ -63,17 +84,6 @@ export default function Dashboard() {
 
   const handleSignOut = () => {
     signOut({ callbackUrl: '/auth/signin' })
-  }
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-yellow-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-blue-700">Loading courses...</p>
-        </div>
-      </div>
-    )
   }
 
   return (
@@ -128,59 +138,94 @@ export default function Dashboard() {
           <div className="text-center space-y-4">
             <h2 className="text-3xl text-blue-900">Welcome back, {session?.user?.name?.split(' ')[0]}!</h2>
             <p className="text-blue-700 max-w-2xl mx-auto">
-              Ready to tackle {focusClass?.name || 'your courses'} using concepts from your successful CS 61B experience? 
-              Coursemate has personalized your learning path based on your academic history.
+              {hasTranscript 
+                ? "Your personalized curriculum is ready! Explore your recommended courses and learning path."
+                : "Upload your transcript to get started with personalized course recommendations and learning paths."
+              }
             </p>
           </div>
 
+          {/* Main Tabs */}
+          <Tabs defaultValue={hasTranscript ? "curriculum" : "upload"} className="w-full">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="upload" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Upload Transcript
+              </TabsTrigger>
+              <TabsTrigger value="curriculum" className="flex items-center gap-2" disabled={!hasTranscript}>
+                <GraduationCap className="h-4 w-4" />
+                My Curriculum
+              </TabsTrigger>
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Overview
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="upload" className="space-y-6">
+              <TranscriptUpload onUploadSuccess={handleTranscriptUpload} />
+            </TabsContent>
+
+            <TabsContent value="curriculum" className="space-y-6">
+              {hasTranscript ? (
+                <PersonalizedCurriculum />
+              ) : (
+                <Card>
+                  <CardContent className="pt-6 text-center">
+                    <p className="text-gray-600">Please upload your transcript first to view your personalized curriculum.</p>
+                  </CardContent>
+                </Card>
+              )}
+            </TabsContent>
+
+            <TabsContent value="overview" className="space-y-6">
+
           {/* Current Focus Class */}
-          {focusClass && (
-            <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-yellow-50">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
-                      <BookOpen className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <CardTitle className="text-blue-900">Current Focus</CardTitle>
-                      <p className="text-blue-700">{focusClass.name}</p>
-                    </div>
+          <Card className="border-2 border-blue-200 bg-gradient-to-r from-blue-50 to-yellow-50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <BookOpen className="w-6 h-6 text-white" />
                   </div>
-                  <Badge className="bg-yellow-500 text-yellow-900">Active</Badge>
+                  <div>
+                    <CardTitle className="text-blue-900">Current Focus</CardTitle>
+                    <p className="text-blue-700">{focusClass.name}</p>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-blue-700">Course Progress</span>
-                    <span className="text-sm text-blue-900">75%</span>
+                <Badge className="bg-yellow-500 text-yellow-900">Active</Badge>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-blue-700">Course Progress</span>
+                  <span className="text-sm text-blue-900">{focusClass.progress}%</span>
+                </div>
+                <Progress value={focusClass.progress} className="h-2" />
+              </div>
+              
+              <div className="flex items-center justify-between pt-4">
+                <div className="flex items-center space-x-4 text-sm text-blue-700">
+                  <div className="flex items-center space-x-1">
+                    <Clock className="w-4 h-4" />
+                    <span>3 lessons left this week</span>
                   </div>
-                  <Progress value={75} className="h-2" />
+                  <div className="flex items-center space-x-1">
+                    <Star className="w-4 h-4" />
+                    <span>Adapted from CS 61B style</span>
+                  </div>
                 </div>
                 
-                <div className="flex items-center justify-between pt-4">
-                  <div className="flex items-center space-x-4 text-sm text-blue-700">
-                    <div className="flex items-center space-x-1">
-                      <Clock className="w-4 h-4" />
-                      <span>3 lessons left this week</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Star className="w-4 h-4" />
-                      <span>Adapted from CS 61B style</span>
-                    </div>
-                  </div>
-                  
-                  <Button 
-                    onClick={handleStartLearning}
-                    className="bg-blue-600 hover:bg-blue-700 text-white"
-                  >
-                    Start Learning
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+                <Button 
+                  onClick={handleStartLearning}
+                  className="bg-blue-600 hover:bg-blue-700 text-white"
+                >
+                  Start Learning
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
           <div className="grid lg:grid-cols-2 gap-8">
             {/* Current Classes */}
@@ -192,7 +237,7 @@ export default function Dashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                {courses.map((course) => (
+                {currentClasses.map((course) => (
                   <div 
                     key={course.id} 
                     className="flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 cursor-pointer transition-colors"
@@ -203,17 +248,17 @@ export default function Dashboard() {
                       <div className="mt-2 space-y-1">
                         <div className="flex justify-between text-sm">
                           <span className="text-blue-700">Progress</span>
-                          <span className="text-blue-900">75%</span>
+                          <span className="text-blue-900">{course.progress}%</span>
                         </div>
-                        <Progress value={75} className="h-1" />
+                        <Progress value={course.progress} className="h-1" />
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
                       <Badge 
-                        variant={course.id === focusClass?.id ? 'default' : 'secondary'}
-                        className={course.id === focusClass?.id ? 'bg-yellow-500 text-yellow-900' : ''}
+                        variant={course.id === 'cs170' ? 'default' : 'secondary'}
+                        className={course.id === 'cs170' ? 'bg-yellow-500 text-yellow-900' : ''}
                       >
-                        {course.id === focusClass?.id ? 'Focus' : 'Active'}
+                        {course.id === 'cs170' ? 'Focus' : 'Active'}
                       </Badge>
                       <ChevronRight className="w-4 h-4 text-blue-600" />
                     </div>
@@ -286,6 +331,8 @@ export default function Dashboard() {
               </CardContent>
             </Card>
           </div>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>
