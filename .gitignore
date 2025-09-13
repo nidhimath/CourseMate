@@ -228,7 +228,7 @@ flask-backend/instance/
 
 # ===========================================
 # OPERATING SYSTEM
-# ===========================================
+# =========================================== 
 # macOS
 .DS_Store
 .AppleDouble
@@ -358,3 +358,4 @@ docker-compose.override.yml
 *.zip
 *.rar
 *.7z
+node_modules
