@@ -235,7 +235,7 @@ export default function PersonalizedCurriculum() {
           onClick={() => window.location.href = `/courses/${courseCode}`}
         >
           <BookOpen className="mr-2 h-4 w-4" />
-          {courseCode === 'CS162' ? 'View Personalized Study Guide' : 'View Course Materials'}
+          View Personalized Study Guide
         </Button>
         
         {courseInfo.prerequisites.length > 0 && (

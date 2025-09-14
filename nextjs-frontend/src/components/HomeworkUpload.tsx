@@ -164,6 +164,14 @@ export default function HomeworkUpload({ courseCode, onUploadSuccess, onUploadEr
               <p className="text-sm text-gray-600">
                 {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
               </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => document.getElementById('file-input')?.click()}
+                className="mt-2"
+              >
+                Choose Different File
+              </Button>
             </div>
           ) : (
             <div className="space-y-4">
@@ -176,14 +184,22 @@ export default function HomeworkUpload({ courseCode, onUploadSuccess, onUploadEr
                   PDF files up to 16MB
                 </p>
               </div>
+              <Button
+                variant="outline"
+                onClick={() => document.getElementById('file-input')?.click()}
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Browse Files
+              </Button>
             </div>
           )}
           
           <input
+            id="file-input"
             type="file"
             accept=".pdf"
             onChange={handleFileChange}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            className="hidden"
           />
         </div>
 

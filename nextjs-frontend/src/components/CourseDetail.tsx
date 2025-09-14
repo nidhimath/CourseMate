@@ -23,7 +23,6 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useLessonContext } from '@/contexts/LessonContext';
 import Assignments from './Assignments';
 
 interface Lesson {
@@ -58,7 +57,6 @@ export default function CourseDetail({
 }: CourseDetailProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isLessonCompleted, getLessonProgress, toggleLessonCompletion } = useLessonContext();
   const [selectedWeek, setSelectedWeek] = useState(1);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,18 +129,6 @@ export default function CourseDetail({
   }, [courseCode, selectedWeek]);
 
   // Update lesson completion status after lessons are generated
-  useEffect(() => {
-    if (lessons.length > 0) {
-      console.log('Updating lesson completion status for', lessons.length, 'lessons');
-      setLessons(prevLessons => 
-        prevLessons.map(lesson => ({
-          ...lesson,
-          completed: isLessonCompleted(lesson.id),
-          progress: getLessonProgress(lesson.id)
-        }))
-      );
-    }
-  }, [lessons.length, isLessonCompleted, getLessonProgress]);
 
   const fetchLessons = async () => {
     console.log('fetchLessons called for week:', selectedWeek);
@@ -150,11 +136,11 @@ export default function CourseDetail({
     console.log('fetchLessons: Search params:', Object.fromEntries(searchParams.entries()));
     setIsLoading(true);
     try {
-      // For CS162, we'll generate lessons based on the weekly content we have
-      if (courseCode === 'CS162') {
-        const cs162Lessons = await generateCS162Lessons(selectedWeek);
-        console.log('Generated lessons for week', selectedWeek, ':', cs162Lessons.length, 'lessons');
-        setLessons(cs162Lessons);
+      // For courses with study guides (CS162, CS170, EECS126), generate lessons from content
+      if (['CS162', 'CS170', 'EECS126'].includes(courseCode)) {
+        const courseLessons = await generateLessons(selectedWeek, courseCode);
+        console.log('Generated lessons for week', selectedWeek, ':', courseLessons.length, 'lessons');
+        setLessons(courseLessons);
       } else {
         // For other courses, fetch from API
         const response = await fetch(`/api/courses/${courseCode}/lessons?week=${selectedWeek}`);
@@ -170,14 +156,14 @@ export default function CourseDetail({
     }
   };
 
-  const generateCS162Lessons = async (week: number): Promise<Lesson[]> => {
-    console.log('generateCS162Lessons called with week:', week);
+  const generateLessons = async (week: number, courseCode: string): Promise<Lesson[]> => {
+    console.log(`generateLessons called with week: ${week}, course: ${courseCode}`);
     const weekLessons: Lesson[] = [];
     
     try {
-      // Fetch the lessons for this week
+      // Fetch the lessons for this week based on course code
       console.log('Fetching lessons for week:', week);
-      const response = await fetch(`/api/cs162/content/${week}`);
+      const response = await fetch(`/api/${courseCode.toLowerCase()}/content/${week}`);
       if (response.ok) {
         const data = await response.json();
         const lessons = data.lessons;
@@ -192,8 +178,8 @@ export default function CourseDetail({
             description: `Study guide content for ${lesson.title}`,
             duration: 45,
             difficulty: 'Beginner',
-            completed: isLessonCompleted(lessonId),
-            progress: getLessonProgress(lessonId),
+            completed: false,
+            progress: 0,
             week,
             order: index + 1,
             content: lesson.content // Store the HTML content
@@ -201,7 +187,7 @@ export default function CourseDetail({
         });
       }
     } catch (error) {
-      console.error('Error generating CS162 lessons:', error);
+      console.error(`Error generating ${courseCode} lessons:`, error);
     }
     
     // If no lessons found, create a default one
@@ -233,28 +219,14 @@ export default function CourseDetail({
     router.push(`/courses/${courseCode}/lessons/${lesson.id}`);
   };
 
-  const handleToggleLessonCompletion = async (lessonId: string) => {
-    try {
-      console.log('Toggling completion for lesson:', lessonId);
-      // Toggle lesson completion in the context (this will persist)
-      await toggleLessonCompletion(lessonId);
-      
-      // Update only the specific lesson that was clicked
-      setLessons(prevLessons => 
-        prevLessons.map(lesson => 
-          lesson.id === lessonId 
-            ? { 
-                ...lesson, 
-                completed: !lesson.completed, 
-                progress: lesson.completed ? 0 : 100 
-              }
-            : lesson
-        )
-      );
-      console.log('Updated lesson completion for:', lessonId);
-    } catch (error) {
-      console.error('Error toggling lesson completion:', error);
-    }
+  const handleToggleLessonCompletion = (lessonId: string) => {
+    setLessons(prevLessons => 
+      prevLessons.map(lesson => 
+        lesson.id === lessonId 
+          ? { ...lesson, completed: !lesson.completed }
+          : lesson
+      )
+    );
   };
 
   return (
@@ -355,7 +327,7 @@ export default function CourseDetail({
                   <div className="flex items-center justify-center p-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
                   </div>
-                ) : (
+                ) : lessons.length > 0 ? (
                   <div className="space-y-3">
                     {lessons.map((lesson) => (
                       <Card 
@@ -398,17 +370,17 @@ export default function CourseDetail({
                                 </div>
                                 
                                 <div className="flex items-center gap-3">
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
+                                  <button
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleToggleLessonCompletion(lesson.id);
                                     }}
-                                    className="text-xs"
-                                  >
-                                    {lesson.completed ? 'Mark Incomplete' : 'Mark Complete'}
-                                  </Button>
+                                    className={`w-6 h-6 rounded-full border-2 transition-colors ${
+                                      lesson.completed 
+                                        ? 'bg-green-500 border-green-500' 
+                                        : 'bg-white border-gray-300 hover:border-gray-400'
+                                    }`}
+                                  />
                                   {expandedLessons.has(lesson.id) ? (
                                     <ChevronDown className="h-4 w-4 text-gray-400" />
                                   ) : (
@@ -444,6 +416,14 @@ export default function CourseDetail({
                         </Collapsible>
                       </Card>
                     ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <BookOpen className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No lessons available</h3>
+                    <p className="text-gray-600">
+                      No content is available for this week. Please check back later.
+                    </p>
                   </div>
                 )}
               </div>

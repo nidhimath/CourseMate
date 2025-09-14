@@ -12,7 +12,7 @@ export async function GET(
     const week = params.week;
     
     // Construct the path to the study guide
-    const studyGuidePath = path.join(process.cwd(), '..', 'CS162_New', `W${week}`, 'study_guide.md');
+    const studyGuidePath = path.join(process.cwd(), '..', 'CS170_New', `W${week}`, 'study_guide.md');
     
     // Check if the file exists
     if (!fs.existsSync(studyGuidePath)) {
@@ -28,10 +28,10 @@ export async function GET(
     // Split sections by "## " headers
     const sections = fileContents.split(/^## /gm).filter(Boolean);
     
-    // Filter out the main title section (starts with "# CS162")
+    // Filter out the main title section (starts with "# CS170")
     const contentSections = sections.filter(section => {
       const [titleLine] = section.split('\n');
-      return !titleLine.trim().startsWith('# CS162');
+      return !titleLine.trim().startsWith('# CS170');
     });
     
     const lessons = await Promise.all(
