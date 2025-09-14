@@ -27,7 +27,7 @@ jwt = JWTManager(app)
 
 # Import models and routes
 from models import User, Course, Lesson, Progress, Concept, Exercise
-from routes import auth_bp, courses_bp, lessons_bp, progress_bp, transcript_bp
+from routes import auth_bp, courses_bp, lessons_bp, progress_bp, transcript_bp, lesson_progress_bp, homework_bp
 
 # Register blueprints
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
@@ -35,6 +35,8 @@ app.register_blueprint(courses_bp, url_prefix='/api/courses')
 app.register_blueprint(lessons_bp, url_prefix='/api/lessons')
 app.register_blueprint(progress_bp, url_prefix='/api/progress')
 app.register_blueprint(transcript_bp, url_prefix='/api/transcript')
+app.register_blueprint(lesson_progress_bp, url_prefix='/api/courses')
+app.register_blueprint(homework_bp, url_prefix='/api/courses')
 
 @app.route('/api/health')
 def health_check():

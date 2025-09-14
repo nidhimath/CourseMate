@@ -9,11 +9,10 @@ import {
   ArrowLeft, 
   CheckCircle,
   BookOpen,
-  Clock,
-  ChevronRight,
-  ChevronLeft
+  Clock
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useLessonContext } from '@/contexts/LessonContext';
 
 interface LessonContentProps {
   courseCode: string;
@@ -29,16 +28,22 @@ export default function LessonContent({
   courseName 
 }: LessonContentProps) {
   const router = useRouter();
+  const { isLessonCompleted, toggleLessonCompletion, lessonCompletions } = useLessonContext();
   const [content, setContent] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [currentSection, setCurrentSection] = useState(0);
-  const [sections, setSections] = useState<string[]>([]);
 
   useEffect(() => {
     fetchLessonContent();
+    // Check if lesson is already completed from persistent state
+    setIsCompleted(isLessonCompleted(lessonId));
   }, [courseCode, lessonId]);
+
+  // Update completion status when lessonId changes or when this specific lesson's completion changes
+  useEffect(() => {
+    setIsCompleted(isLessonCompleted(lessonId));
+  }, [lessonId, lessonCompletions[lessonId]]);
 
   const fetchLessonContent = async () => {
     setIsLoading(true);
@@ -52,10 +57,8 @@ export default function LessonContent({
           const data = await response.json();
           const fullContent = data.content;
           
-          // Parse content into sections
-          const contentSections = parseContentIntoSections(fullContent, lessonId);
-          setSections(contentSections);
-          setContent(contentSections[0] || fullContent);
+          // Show the full content instead of sections
+          setContent(fullContent);
           
           // Simulate progress (in real app, this would come from user progress)
           setProgress(Math.floor(Math.random() * 100));
@@ -151,49 +154,32 @@ export default function LessonContent({
     return `## ${groupTitle}\n\n${combinedContent}`;
   };
 
-  const handleMarkComplete = async () => {
+  const handleToggleComplete = async () => {
     try {
-      // Update progress in the backend
-      const response = await fetch(`/api/courses/${courseCode}/lessons/${lessonId}/progress`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          completed: true,
-          progress: 100
-        }),
-      });
-
-      if (response.ok) {
-        setIsCompleted(true);
-        setProgress(100);
-        
-        // Show success message
+      console.log('LessonContent: Toggling completion for lesson:', lessonId);
+      // Toggle lesson completion in the context (this will persist)
+      await toggleLessonCompletion(lessonId);
+      
+      // Update local state
+      const newCompleted = !isCompleted;
+      setIsCompleted(newCompleted);
+      setProgress(newCompleted ? 100 : 0);
+      console.log('LessonContent: Updated completion status to:', newCompleted);
+      
+      // If marking as complete, navigate back to course after a delay
+      if (newCompleted) {
         setTimeout(() => {
-          // Could navigate to next lesson or back to course overview
+          const week = lessonId.split('-')[0];
+          console.log('LessonContent: Mark complete navigation to week:', week);
+          console.log('LessonContent: Full URL will be:', `/courses/${courseCode}?week=${week}`);
+          router.push(`/courses/${courseCode}?week=${week}`);
         }, 1000);
-      } else {
-        throw new Error('Failed to update progress');
       }
     } catch (error) {
-      console.error('Error marking lesson complete:', error);
+      console.error('Error toggling lesson completion:', error);
     }
   };
 
-  const handleNextSection = () => {
-    if (currentSection < sections.length - 1) {
-      setCurrentSection(currentSection + 1);
-      setContent(sections[currentSection + 1]);
-    }
-  };
-
-  const handlePrevSection = () => {
-    if (currentSection > 0) {
-      setCurrentSection(currentSection - 1);
-      setContent(sections[currentSection - 1]);
-    }
-  };
 
   const formatContent = (content: string) => {
     return content
@@ -217,14 +203,20 @@ export default function LessonContent({
       <div className="max-w-4xl mx-auto p-6">
         {/* Header */}
         <div className="mb-6">
-          <Button
-            variant="ghost"
-            onClick={() => router.push(`/courses/${courseCode}`)}
-            className="mb-4 p-0 h-auto text-gray-600 hover:text-gray-900"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
+      <Button
+        variant="ghost"
+        onClick={() => {
+          // Extract week from lessonId (format: "week-lesson")
+          const week = lessonId.split('-')[0];
+          console.log('LessonContent: Back button clicked, navigating to week:', week);
+          console.log('LessonContent: Full URL will be:', `/courses/${courseCode}?week=${week}`);
+          router.push(`/courses/${courseCode}?week=${week}`);
+        }}
+        className="mb-4 p-0 h-auto text-gray-600 hover:text-gray-900"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
           
           <div className="text-center mb-6">
             <h1 className="text-3xl font-bold text-blue-900 mb-2">
@@ -238,9 +230,9 @@ export default function LessonContent({
           {/* Progress Indicator */}
           <div className="flex items-center justify-center gap-4 mb-6">
             <span className="text-sm text-gray-600">
-              {currentSection + 1} of {sections.length} sections
+              Lesson Progress
             </span>
-            <Progress value={((currentSection + 1) / sections.length) * 100} className="w-32" />
+            <Progress value={progress} className="w-32" />
           </div>
         </div>
 
@@ -254,28 +246,28 @@ export default function LessonContent({
                 </div>
                 <div>
                   <CardTitle className="text-xl text-gray-900">
-                    {sections[currentSection]?.split('\n')[0]?.replace(/^#+\s*/, '') || lessonTitle}
+                    {lessonTitle}
                   </CardTitle>
                 </div>
               </div>
               
               <div className="flex items-center gap-2">
-                {isCompleted ? (
+                {isCompleted && (
                   <>
                     <Badge className="bg-green-100 text-green-800">
                       Completed
                     </Badge>
                     <CheckCircle className="h-5 w-5 text-green-600" />
                   </>
-                ) : (
-                  <Button
-                    onClick={handleMarkComplete}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700"
-                  >
-                    Mark Complete
-                  </Button>
                 )}
+                
+                <Button
+                  onClick={handleToggleComplete}
+                  size="sm"
+                  className={isCompleted ? "bg-gray-600 hover:bg-gray-700" : "bg-blue-600 hover:bg-blue-700"}
+                >
+                  {isCompleted ? 'Mark Incomplete' : 'Mark Complete'}
+                </Button>
               </div>
             </div>
           </CardHeader>
@@ -290,32 +282,12 @@ export default function LessonContent({
           </CardContent>
         </Card>
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center mt-6">
-          <Button
-            variant="outline"
-            onClick={handlePrevSection}
-            disabled={currentSection === 0}
-            className="flex items-center gap-2"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            Previous Section
-          </Button>
-          
+        {/* Time estimate */}
+        <div className="flex justify-center items-center mt-6">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Clock className="h-4 w-4" />
             <span>Estimated time: 45 min</span>
           </div>
-          
-          <Button
-            variant="outline"
-            onClick={handleNextSection}
-            disabled={currentSection === sections.length - 1}
-            className="flex items-center gap-2"
-          >
-            Next Section
-            <ChevronRight className="h-4 w-4" />
-          </Button>
         </div>
 
       </div>

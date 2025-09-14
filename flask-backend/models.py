@@ -19,6 +19,7 @@ class User(db.Model):
     
     # Relationships
     progress = db.relationship('Progress', backref='user', lazy=True, cascade='all, delete-orphan')
+    homework_assignments = db.relationship('HomeworkAssignment', backref='user', lazy=True, cascade='all, delete-orphan')
     
     def to_dict(self):
         return {
@@ -196,6 +197,62 @@ class Progress(db.Model):
             'score': self.score,
             'time_spent': self.time_spent,
             'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
+
+class LessonProgress(db.Model):
+    __tablename__ = 'lesson_progress'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_code = db.Column(db.String(20), nullable=False)  # CS162, etc.
+    lesson_id = db.Column(db.String(50), nullable=False)  # "1-1", "2-1", etc.
+    completed = db.Column(db.Boolean, default=False)
+    progress = db.Column(db.Integer, default=0)  # 0-100 percentage
+    completed_at = db.Column(db.DateTime)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Unique constraint to prevent duplicate entries
+    __table_args__ = (db.UniqueConstraint('user_id', 'course_code', 'lesson_id', name='unique_user_lesson'),)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'course_code': self.course_code,
+            'lesson_id': self.lesson_id,
+            'completed': self.completed,
+            'progress': self.progress,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
+
+class HomeworkAssignment(db.Model):
+    __tablename__ = 'homework_assignments'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    course_code = db.Column(db.String(20), nullable=False)  # CS162, etc.
+    title = db.Column(db.String(200), nullable=False)
+    original_filename = db.Column(db.String(200), nullable=False)
+    exercises_data = db.Column(db.Text, nullable=False)  # JSON string of structured exercises
+    total_problems = db.Column(db.Integer, default=0)
+    uploaded_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'course_code': self.course_code,
+            'title': self.title,
+            'original_filename': self.original_filename,
+            'exercises_data': self.exercises_data,
+            'total_problems': self.total_problems,
+            'uploaded_at': self.uploaded_at.isoformat(),
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }

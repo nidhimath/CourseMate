@@ -1,8 +1,9 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from models import User, Course, Lesson, Progress, Concept, Exercise, UserCourse, db
+from models import User, Course, Lesson, Progress, Concept, Exercise, UserCourse, LessonProgress, HomeworkAssignment, db
 from transcript_parser import TranscriptParser
 from course_data import get_course_info, get_available_courses, get_missing_prerequisites
+from homework_utils import process_homework_pdf
 from datetime import datetime
 import json
 import os
@@ -503,4 +504,259 @@ def get_recommendations():
         }), 200
         
     except Exception as e:
+        return jsonify({'error': str(e)}), 500
+# Lesson Progress Blueprint
+lesson_progress_bp = Blueprint('lesson_progress', __name__)
+
+@lesson_progress_bp.route('/<course_code>/lessons/<lesson_id>/progress', methods=['POST'])
+@jwt_required()
+def update_lesson_progress(course_code, lesson_id):
+    """Update lesson progress for a user"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        completed = data.get('completed', False)
+        progress = data.get('progress', 0)
+        
+        # Find existing progress record
+        lesson_progress = LessonProgress.query.filter_by(
+            user_id=user_id,
+            course_code=course_code,
+            lesson_id=lesson_id
+        ).first()
+        
+        if lesson_progress:
+            # Update existing record
+            lesson_progress.completed = completed
+            lesson_progress.progress = progress
+            lesson_progress.updated_at = datetime.utcnow()
+            if completed:
+                lesson_progress.completed_at = datetime.utcnow()
+        else:
+            # Create new record
+            lesson_progress = LessonProgress(
+                user_id=user_id,
+                course_code=course_code,
+                lesson_id=lesson_id,
+                completed=completed,
+                progress=progress,
+                completed_at=datetime.utcnow() if completed else None
+            )
+            db.session.add(lesson_progress)
+        
+        db.session.commit()
+        
+        return jsonify({
+            'message': 'Progress updated successfully',
+            'progress': lesson_progress.to_dict()
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+@lesson_progress_bp.route('/<course_code>/lessons/progress', methods=['GET'])
+@jwt_required()
+def get_lesson_progress(course_code):
+    """Get all lesson progress for a user in a course"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get all progress records for this user and course
+        progress_records = LessonProgress.query.filter_by(
+            user_id=user_id,
+            course_code=course_code
+        ).all()
+        
+        # Convert to dictionary for easy lookup
+        progress_dict = {}
+        for record in progress_records:
+            progress_dict[record.lesson_id] = {
+                'completed': record.completed,
+                'progress': record.progress,
+                'completed_at': record.completed_at.isoformat() if record.completed_at else None
+            }
+        
+        return jsonify({
+            'progress': progress_dict
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+# Homework Blueprint
+homework_bp = Blueprint('homework', __name__)
+
+@homework_bp.route('/<course_code>/homework/upload', methods=['POST'])
+@jwt_required()
+def upload_homework(course_code):
+    """Upload a homework PDF and generate structured exercises"""
+    try:
+        print(f"Upload request received for course: {course_code}")
+        user_id = get_jwt_identity()
+        print(f"User ID from JWT: {user_id}")
+        user = User.query.get(user_id)
+        print(f"User found: {user is not None}")
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Check if file is present in request
+        print(f"Request files: {list(request.files.keys())}")
+        if 'file' not in request.files:
+            print("No 'file' key in request.files")
+            return jsonify({
+                'error': 'No file provided',
+                'message': 'Please include a PDF file in the \'file\' field'
+            }), 400
+        
+        file = request.files['file']
+        print(f"File received: {file.filename}, size: {file.content_length}")
+        
+        # Check if file is selected
+        if file.filename == '':
+            return jsonify({
+                'error': 'No file selected',
+                'message': 'Please select a PDF file to upload'
+            }), 400
+        
+        # Check if file is a PDF
+        if not file.filename.lower().endswith('.pdf'):
+            return jsonify({
+                'error': 'Invalid file type',
+                'message': 'Only PDF files are allowed'
+            }), 400
+        
+        # Save file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+            file.save(temp_file.name)
+            temp_path = temp_file.name
+        
+        try:
+            # Process the homework PDF
+            exercises_data = process_homework_pdf(temp_path, file.filename)
+            
+            # Check if user already has homework for this course
+            existing_homework = HomeworkAssignment.query.filter_by(
+                user_id=user_id,
+                course_code=course_code
+            ).first()
+            
+            if existing_homework:
+                # Update existing homework
+                existing_homework.title = exercises_data.get('title', 'Homework Assignment')
+                existing_homework.original_filename = file.filename
+                existing_homework.exercises_data = json.dumps(exercises_data)
+                existing_homework.total_problems = len(exercises_data.get('problems', []))
+                existing_homework.uploaded_at = datetime.utcnow()
+                existing_homework.updated_at = datetime.utcnow()
+            else:
+                # Create new homework assignment
+                homework = HomeworkAssignment(
+                    user_id=user_id,
+                    course_code=course_code,
+                    title=exercises_data.get('title', 'Homework Assignment'),
+                    original_filename=file.filename,
+                    exercises_data=json.dumps(exercises_data),
+                    total_problems=len(exercises_data.get('problems', []))
+                )
+                db.session.add(homework)
+            
+            db.session.commit()
+            
+            return jsonify({
+                'success': True,
+                'data': exercises_data,
+                'message': f'Successfully processed {file.filename} and generated {len(exercises_data.get("problems", []))} problems'
+            }), 200
+            
+        finally:
+            # Clean up temporary file
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'error': 'Internal server error',
+            'message': str(e)
+        }), 500
+
+@homework_bp.route('/<course_code>/homework', methods=['GET'])
+@jwt_required()
+def get_homework(course_code):
+    """Get homework assignment for a user and course"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get homework assignment for this user and course
+        homework = HomeworkAssignment.query.filter_by(
+            user_id=user_id,
+            course_code=course_code
+        ).first()
+        
+        if not homework:
+            return jsonify({
+                'error': 'No homework found',
+                'message': 'No homework assignment found for this course'
+            }), 404
+        
+        # Parse the exercises data
+        exercises_data = json.loads(homework.exercises_data)
+        
+        return jsonify({
+            'success': True,
+            'data': exercises_data,
+            'homework_info': homework.to_dict()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@homework_bp.route('/<course_code>/homework', methods=['DELETE'])
+@jwt_required()
+def delete_homework(course_code):
+    """Delete homework assignment for a user and course"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Find and delete homework assignment
+        homework = HomeworkAssignment.query.filter_by(
+            user_id=user_id,
+            course_code=course_code
+        ).first()
+        
+        if not homework:
+            return jsonify({
+                'error': 'No homework found',
+                'message': 'No homework assignment found for this course'
+            }), 404
+        
+        db.session.delete(homework)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': 'Homework assignment deleted successfully'
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500

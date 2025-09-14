@@ -7,24 +7,27 @@ export async function POST(
   try {
     const { courseCode, lessonId } = params;
     const body = await request.json();
-    const { completed, progress } = body;
-
-    // In a real application, you would:
-    // 1. Authenticate the user
-    // 2. Store the progress in the database
-    // 3. Update the user's overall course progress
     
-    // For now, we'll just return a success response
-    return NextResponse.json({
-      success: true,
-      message: 'Progress updated successfully',
-      data: {
-        courseCode,
-        lessonId,
-        completed,
-        progress
-      }
+    // Get the authorization header from the request
+    const authHeader = request.headers.get('authorization');
+    
+    // Proxy the request to the Flask backend
+    const response = await fetch(`http://localhost:5001/api/courses/${courseCode}/lessons/${lessonId}/progress`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(authHeader && { 'Authorization': authHeader }),
+      },
+      body: JSON.stringify(body),
     });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      return NextResponse.json(data, { status: response.status });
+    }
+
+    return NextResponse.json(data);
 
   } catch (error) {
     console.error('Error updating lesson progress:', error);
