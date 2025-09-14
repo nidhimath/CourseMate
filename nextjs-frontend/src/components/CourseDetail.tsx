@@ -20,10 +20,12 @@ import {
   FileText,
   Play,
   Target,
-  TrendingUp
+  TrendingUp,
+  Info
 } from 'lucide-react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Assignments from './Assignments';
+import TopicGraphModal from './TopicGraphModal';
 
 interface Lesson {
   id: string;
@@ -62,6 +64,8 @@ export default function CourseDetail({
   const [isLoading, setIsLoading] = useState(true);
   const [expandedLessons, setExpandedLessons] = useState<Set<string>>(new Set());
   const [lessonContent, setLessonContent] = useState<{[key: string]: any}>({});
+  const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
+  const [selectedLessonContent, setSelectedLessonContent] = useState<string>('');
 
   const toggleLessonExpansion = (lessonId: string) => {
     const newExpanded = new Set(expandedLessons);
@@ -93,7 +97,22 @@ export default function CourseDetail({
     }
   };
 
+  const handleLessonInfoClick = (lesson: Lesson, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent card expansion
+    
+    // Use the lesson content directly - strip HTML tags to get clean text for classification
+    const textContent = lesson.content ? 
+      lesson.content.replace(/<[^>]*>/g, '') : // Strip HTML tags
+      `${lesson.title}\n${lesson.description}`;
+    
+    setSelectedLessonContent(textContent);
+    setIsGraphModalOpen(true);
+  };
 
+  const handleCloseGraphModal = () => {
+    setIsGraphModalOpen(false);
+    setSelectedLessonContent('');
+  };
 
   // Check URL parameters on every render to ensure we catch navigation changes
   useEffect(() => {
@@ -370,7 +389,19 @@ export default function CourseDetail({
                                 </div>
                                 
                                 <div className="flex items-center gap-3">
+                                  {/* Info Button */}
                                   <button
+                                    onClick={(e) => handleLessonInfoClick(lesson, e)}
+                                    className="p-1.5 hover:bg-red-100 rounded-full transition-colors group border border-red-500"
+                                    title="View lesson topic in knowledge graph"
+                                    aria-label="View lesson topic relationships"
+                                  >
+                                    <Info className="h-4 w-4 text-red-500 group-hover:text-red-700" />
+                                  </button>
+                                  
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       handleToggleLessonCompletion(lesson.id);
@@ -435,6 +466,14 @@ export default function CourseDetail({
           </TabsContent>
         </Tabs>
       </div>
+      
+      {/* Topic Graph Modal */}
+      <TopicGraphModal
+        isOpen={isGraphModalOpen}
+        onClose={handleCloseGraphModal}
+        lessonContent={selectedLessonContent}
+        courseCode={courseCode}
+      />
     </div>
   );
 }

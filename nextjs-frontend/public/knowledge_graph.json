@@ -1,0 +1,1914 @@
+{
+    "Functions and Abstraction": {
+      "topic_name": "Functions and Abstraction",
+      "prereqs": [],
+      "course": "CS61A",
+      "order": 0
+    },
+    "Higher-Order Functions": {
+      "topic_name": "Higher-Order Functions",
+      "prereqs": [
+        "Functions and Abstraction"
+      ],
+      "course": "CS61A",
+      "order": 1
+    },
+    "Environments": {
+      "topic_name": "Environments",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Higher-Order Functions"
+      ],
+      "course": "CS61A",
+      "order": 2
+    },
+    "Data Abstraction": {
+      "topic_name": "Data Abstraction",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Higher-Order Functions"
+      ],
+      "course": "CS61A",
+      "order": 3
+    },
+    "Strings": {
+      "topic_name": "Strings",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Data Abstraction"
+      ],
+      "course": "CS61A",
+      "order": 4
+    },
+    "Lists, Tuples, Sets, and Dictionaries": {
+      "topic_name": "Lists, Tuples, Sets, and Dictionaries",
+      "prereqs": [
+        "Data Abstraction",
+        "Strings"
+      ],
+      "course": "CS61A",
+      "order": 5
+    },
+    "Mutable Data": {
+      "topic_name": "Mutable Data",
+      "prereqs": [
+        "Data Abstraction",
+        "Lists, Tuples, Sets, and Dictionaries"
+      ],
+      "course": "CS61A",
+      "order": 6
+    },
+    "Trees and Linked Lists": {
+      "topic_name": "Trees and Linked Lists",
+      "prereqs": [
+        "Data Abstraction",
+        "Mutable Data"
+      ],
+      "course": "CS61A",
+      "order": 7
+    },
+    "Object-Oriented Programming": {
+      "topic_name": "Object-Oriented Programming",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Data Abstraction"
+      ],
+      "course": "CS61A",
+      "order": 8
+    },
+    "Inheritance": {
+      "topic_name": "Inheritance",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Data Abstraction"
+      ],
+      "course": "CS61A",
+      "order": 9
+    },
+    "Recursion": {
+      "topic_name": "Recursion",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Lists, Tuples, Sets, and Dictionaries"
+      ],
+      "course": "CS61A",
+      "order": 10
+    },
+    "Orders of Growth": {
+      "topic_name": "Orders of Growth",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Recursion"
+      ],
+      "course": "CS61A",
+      "order": 11
+    },
+    "Functional Programming using Scheme": {
+      "topic_name": "Functional Programming using Scheme",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Recursion"
+      ],
+      "course": "CS61A",
+      "order": 12
+    },
+    "Iterators and Generators": {
+      "topic_name": "Iterators and Generators",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Higher-Order Functions"
+      ],
+      "course": "CS61A",
+      "order": 13
+    },
+    "Interpreters": {
+      "topic_name": "Interpreters",
+      "prereqs": [
+        "Environments",
+        "Recursion"
+      ],
+      "course": "CS61A",
+      "order": 14
+    },
+    "Streams": {
+      "topic_name": "Streams",
+      "prereqs": [
+        "Iterators and Generators",
+        "Recursion"
+      ],
+      "course": "CS61A",
+      "order": 15
+    },
+    "Macros": {
+      "topic_name": "Macros",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Interpreters"
+      ],
+      "course": "CS61A",
+      "order": 16
+    },
+    "Declarative Programming using SQL": {
+      "topic_name": "Declarative Programming using SQL",
+      "prereqs": [
+        "Data Abstraction",
+        "Lists, Tuples, Sets, and Dictionaries"
+      ],
+      "course": "CS61A",
+      "order": 17
+    },
+    "JavaObject-Oriented ProgrammingInterfacesIteratorsTestingHigher Order FunctionsAbstract ClassesException HandlingPackagesAbstract Data Types, Java Libraries": {
+      "topic_name": "JavaObject-Oriented ProgrammingInterfacesIteratorsTestingHigher Order FunctionsAbstract ClassesException HandlingPackagesAbstract Data Types, Java Libraries",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Inheritance"
+      ],
+      "course": "CS61B",
+      "order": 0
+    },
+    "Interfaces": {
+      "topic_name": "Interfaces",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Data Abstraction"
+      ],
+      "course": "CS61B",
+      "order": 2
+    },
+    "Iterators": {
+      "topic_name": "Iterators",
+      "prereqs": [
+        "Lists, Tuples, Sets, and Dictionaries",
+        "Object-Oriented Programming"
+      ],
+      "course": "CS61B",
+      "order": 3
+    },
+    "Testing": {
+      "topic_name": "Testing",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Object-Oriented Programming"
+      ],
+      "course": "CS61B",
+      "order": 4
+    },
+    "Higher Order Functions": {
+      "topic_name": "Higher Order Functions",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Functional Programming using Scheme"
+      ],
+      "course": "CS61B",
+      "order": 5
+    },
+    "Abstract Classes": {
+      "topic_name": "Abstract Classes",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Inheritance"
+      ],
+      "course": "CS61B",
+      "order": 6
+    },
+    "Exception Handling": {
+      "topic_name": "Exception Handling",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Object-Oriented Programming"
+      ],
+      "course": "CS61B",
+      "order": 7
+    },
+    "Packages": {
+      "topic_name": "Packages",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Object-Oriented Programming"
+      ],
+      "course": "CS61B",
+      "order": 8
+    },
+    "Abstract Data Types, Java Libraries": {
+      "topic_name": "Abstract Data Types, Java Libraries",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Data Abstraction"
+      ],
+      "course": "CS61B",
+      "order": 9
+    },
+    "Arrays": {
+      "topic_name": "Arrays",
+      "prereqs": [
+        "Mutable Data",
+        "Lists, Tuples, Sets, and Dictionaries"
+      ],
+      "course": "CS61B",
+      "order": 10
+    },
+    "Linked Lists (singly-linked, doubly-linked, circular)": {
+      "topic_name": "Linked Lists (singly-linked, doubly-linked, circular)",
+      "prereqs": [
+        "Mutable Data",
+        "Abstract Data Types, Java Libraries"
+      ],
+      "course": "CS61B",
+      "order": 11
+    },
+    "Trees (binary search, 2-3-4, splay)": {
+      "topic_name": "Trees (binary search, 2-3-4, splay)",
+      "prereqs": [
+        "Trees and Linked Lists",
+        "Recursion"
+      ],
+      "course": "CS61B",
+      "order": 12
+    },
+    "Hash Tables (including implementations with linear probing/chaining)": {
+      "topic_name": "Hash Tables (including implementations with linear probing/chaining)",
+      "prereqs": [
+        "Lists, Tuples, Sets, and Dictionaries",
+        "Arrays"
+      ],
+      "course": "CS61B",
+      "order": 13
+    },
+    "Stacks/Queues (Priority Queues)": {
+      "topic_name": "Stacks/Queues (Priority Queues)",
+      "prereqs": [
+        "Abstract Data Types, Java Libraries",
+        "Linked Lists (singly-linked, doubly-linked, circular)"
+      ],
+      "course": "CS61B",
+      "order": 14
+    },
+    "Heaps": {
+      "topic_name": "Heaps",
+      "prereqs": [
+        "Trees (binary search, 2-3-4, splay)",
+        "Stacks/Queues (Priority Queues)"
+      ],
+      "course": "CS61B",
+      "order": 15
+    },
+    "Graphs": {
+      "topic_name": "Graphs",
+      "prereqs": [
+        "Trees and Linked Lists",
+        "Hash Tables (including implementations with linear probing/chaining)"
+      ],
+      "course": "CS61B",
+      "order": 16
+    },
+    "Sets (disjoint sets)": {
+      "topic_name": "Sets (disjoint sets)",
+      "prereqs": [
+        "Trees (binary search, 2-3-4, splay)",
+        "Abstract Data Types, Java Libraries"
+      ],
+      "course": "CS61B",
+      "order": 17
+    },
+    "Tries": {
+      "topic_name": "Tries",
+      "prereqs": [
+        "Trees (binary search, 2-3-4, splay)",
+        "Strings"
+      ],
+      "course": "CS61B",
+      "order": 18
+    },
+    "Search (Depth First, Breadth First)": {
+      "topic_name": "Search (Depth First, Breadth First)",
+      "prereqs": [
+        "Trees and Linked Lists",
+        "Graphs"
+      ],
+      "course": "CS61B",
+      "order": 19
+    },
+    "C Programming Language": {
+      "topic_name": "C Programming Language",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Arrays"
+      ],
+      "course": "CS61C",
+      "order": 0
+    },
+    "Compiling and Debugging": {
+      "topic_name": "Compiling and Debugging",
+      "prereqs": [
+        "C Programming Language",
+        "Exception Handling"
+      ],
+      "course": "CS61C",
+      "order": 1
+    },
+    "Bit manipulation": {
+      "topic_name": "Bit manipulation",
+      "prereqs": [
+        "C Programming Language",
+        "Arrays"
+      ],
+      "course": "CS61C",
+      "order": 2
+    },
+    "Integer/floating point representation": {
+      "topic_name": "Integer/floating point representation",
+      "prereqs": [
+        "C Programming Language",
+        "Bit manipulation"
+      ],
+      "course": "CS61C",
+      "order": 3
+    },
+    "Assembly language (RISC-V)": {
+      "topic_name": "Assembly language (RISC-V)",
+      "prereqs": [
+        "C Programming Language",
+        "Bit manipulation"
+      ],
+      "course": "CS61C",
+      "order": 4
+    },
+    "The CALL process (Compiling, Assembling, Linking, Loading)": {
+      "topic_name": "The CALL process (Compiling, Assembling, Linking, Loading)",
+      "prereqs": [
+        "C Programming Language",
+        "Assembly language (RISC-V)"
+      ],
+      "course": "CS61C",
+      "order": 5
+    },
+    "Boolean algebra, Synchronous Digital Systems and Finite State Machines": {
+      "topic_name": "Boolean algebra, Synchronous Digital Systems and Finite State Machines",
+      "prereqs": [
+        "Bit manipulation",
+        "Integer/floating point representation"
+      ],
+      "course": "CS61C",
+      "order": 6
+    },
+    "Combinatorial Hardware/Logic": {
+      "topic_name": "Combinatorial Hardware/Logic",
+      "prereqs": [
+        "Bit manipulation",
+        "Boolean algebra, Synchronous Digital Systems and Finite State Machines"
+      ],
+      "course": "CS61C",
+      "order": 7
+    },
+    "CPU structure and processor design": {
+      "topic_name": "CPU structure and processor design",
+      "prereqs": [
+        "Assembly language (RISC-V)",
+        "Boolean algebra, Synchronous Digital Systems and Finite State Machines"
+      ],
+      "course": "CS61C",
+      "order": 8
+    },
+    "Pipelining": {
+      "topic_name": "Pipelining",
+      "prereqs": [
+        "Assembly language (RISC-V)",
+        "CPU structure and processor design"
+      ],
+      "course": "CS61C",
+      "order": 9
+    },
+    "Caching / memory hierarchy": {
+      "topic_name": "Caching / memory hierarchy",
+      "prereqs": [
+        "CPU structure and processor design",
+        "Integer/floating point representation"
+      ],
+      "course": "CS61C",
+      "order": 10
+    },
+    "Virtual Memory": {
+      "topic_name": "Virtual Memory",
+      "prereqs": [
+        "Caching / memory hierarchy",
+        "Basic OS concepts (I/O, Memory Management, Networking)"
+      ],
+      "course": "CS61C",
+      "order": 11
+    },
+    "Basic OS concepts (I/O, Memory Management, Networking)": {
+      "topic_name": "Basic OS concepts (I/O, Memory Management, Networking)",
+      "prereqs": [
+        "Caching / memory hierarchy",
+        "Virtual Memory"
+      ],
+      "course": "CS61C",
+      "order": 12
+    },
+    "Parallelism (data-level, thread-level, request-level)": {
+      "topic_name": "Parallelism (data-level, thread-level, request-level)",
+      "prereqs": [
+        "Pipelining",
+        "Basic OS concepts (I/O, Memory Management, Networking)"
+      ],
+      "course": "CS61C",
+      "order": 13
+    },
+    "Warehouse-Scale Computing": {
+      "topic_name": "Warehouse-Scale Computing",
+      "prereqs": [
+        "Caching / memory hierarchy",
+        "Parallelism (data-level, thread-level, request-level)"
+      ],
+      "course": "CS61C",
+      "order": 14
+    },
+    "Basic logic": {
+      "topic_name": "Basic logic",
+      "prereqs": [],
+      "course": "CS70",
+      "order": 0
+    },
+    "Proofs (direct, by contradiction, by contrapositive)": {
+      "topic_name": "Proofs (direct, by contradiction, by contrapositive)",
+      "prereqs": [
+        "Basic logic"
+      ],
+      "course": "CS70",
+      "order": 1
+    },
+    "Induction": {
+      "topic_name": "Induction",
+      "prereqs": [
+        "Basic logic",
+        "Proofs (direct, by contradiction, by contrapositive)"
+      ],
+      "course": "CS70",
+      "order": 2
+    },
+    "Stable Matching": {
+      "topic_name": "Stable Matching",
+      "prereqs": [
+        "Lists, Tuples, Sets, and Dictionaries",
+        "Basic logic"
+      ],
+      "course": "CS70",
+      "order": 3
+    },
+    "Graph Theory (hypercubes, Eulerian paths, Hamiltonian paths)": {
+      "topic_name": "Graph Theory (hypercubes, Eulerian paths, Hamiltonian paths)",
+      "prereqs": [
+        "Recursion",
+        "Proofs (direct, by contradiction, by contrapositive)"
+      ],
+      "course": "CS70",
+      "order": 4
+    },
+    "Modular Arithmetic (Euclid's Algorithm, Extended Euclid's)": {
+      "topic_name": "Modular Arithmetic (Euclid's Algorithm, Extended Euclid's)",
+      "prereqs": [
+        "Recursion",
+        "Induction"
+      ],
+      "course": "CS70",
+      "order": 5
+    },
+    "Bijections, RSA, Fermat's Little Theorem": {
+      "topic_name": "Bijections, RSA, Fermat's Little Theorem",
+      "prereqs": [
+        "Basic logic",
+        "Modular Arithmetic (Euclid's Algorithm, Extended Euclid's)"
+      ],
+      "course": "CS70",
+      "order": 6
+    },
+    "Polynomials over finite fields (secret sharing, error-correcting codes, Berlekamp-Welsh)": {
+      "topic_name": "Polynomials over finite fields (secret sharing, error-correcting codes, Berlekamp-Welsh)",
+      "prereqs": [
+        "Modular Arithmetic (Euclid's Algorithm, Extended Euclid's)",
+        "Basic logic"
+      ],
+      "course": "CS70",
+      "order": 7
+    },
+    "Countability and Computability": {
+      "topic_name": "Countability and Computability",
+      "prereqs": [
+        "Basic logic",
+        "Proofs (direct, by contradiction, by contrapositive)"
+      ],
+      "course": "CS70",
+      "order": 8
+    },
+    "Counting and Combinatorial Arguments": {
+      "topic_name": "Counting and Combinatorial Arguments",
+      "prereqs": [
+        "Basic logic",
+        "Induction"
+      ],
+      "course": "CS70",
+      "order": 9
+    },
+    "Discrete Probability": {
+      "topic_name": "Discrete Probability",
+      "prereqs": [
+        "Basic logic",
+        "Counting and Combinatorial Arguments"
+      ],
+      "course": "CS70",
+      "order": 10
+    },
+    "Conditional Probability": {
+      "topic_name": "Conditional Probability",
+      "prereqs": [
+        "Basic logic",
+        "Discrete Probability"
+      ],
+      "course": "CS70",
+      "order": 11
+    },
+    "Probabilistic Inference (Bayes Rule)": {
+      "topic_name": "Probabilistic Inference (Bayes Rule)",
+      "prereqs": [
+        "Discrete Probability",
+        "Conditional Probability"
+      ],
+      "course": "CS70",
+      "order": 12
+    },
+    "Independence": {
+      "topic_name": "Independence",
+      "prereqs": [
+        "Discrete Probability",
+        "Conditional Probability"
+      ],
+      "course": "CS70",
+      "order": 13
+    },
+    "Probability: Expectation and Variance (applications with hash tables)": {
+      "topic_name": "Probability: Expectation and Variance (applications with hash tables)",
+      "prereqs": [
+        "Discrete Probability",
+        "Lists, Tuples, Sets, and Dictionaries"
+      ],
+      "course": "CS70",
+      "order": 14
+    },
+    "Law of Large Numbers": {
+      "topic_name": "Law of Large Numbers",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS70",
+      "order": 15
+    },
+    "Confidence Intervals": {
+      "topic_name": "Confidence Intervals",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS70",
+      "order": 16
+    },
+    "Linear Regression": {
+      "topic_name": "Linear Regression",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS70",
+      "order": 17
+    },
+    "Distributions (discrete, continuous)": {
+      "topic_name": "Distributions (discrete, continuous)",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS70",
+      "order": 18
+    },
+    "Bounds (Markov, Chebyshev, Central Limit Theorem)": {
+      "topic_name": "Bounds (Markov, Chebyshev, Central Limit Theorem)",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS70",
+      "order": 19
+    },
+    "Linear regression": {
+      "topic_name": "Linear regression",
+      "prereqs": [
+        "Optimization",
+        "Maximum likelihood estimation"
+      ],
+      "course": "CS70",
+      "order": 20
+    },
+    "Conditional expectation": {
+      "topic_name": "Conditional expectation",
+      "prereqs": [
+        "Conditional Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS70",
+      "order": 21
+    },
+    "Markov Chains": {
+      "topic_name": "Markov Chains",
+      "prereqs": [
+        "Discrete Probability",
+        "Conditional Probability"
+      ],
+      "course": "CS70",
+      "order": 22
+    },
+    "Design cycle": {
+      "topic_name": "Design cycle",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Testing"
+      ],
+      "course": "CS160",
+      "order": 0
+    },
+    "Storyboarding, scenarios, personas": {
+      "topic_name": "Storyboarding, scenarios, personas",
+      "prereqs": [
+        "Design cycle"
+      ],
+      "course": "CS160",
+      "order": 1
+    },
+    "Task analysis": {
+      "topic_name": "Task analysis",
+      "prereqs": [
+        "Design cycle",
+        "Storyboarding, scenarios, personas"
+      ],
+      "course": "CS160",
+      "order": 2
+    },
+    "Contextual inquiry": {
+      "topic_name": "Contextual inquiry",
+      "prereqs": [
+        "Design cycle",
+        "Storyboarding, scenarios, personas"
+      ],
+      "course": "CS160",
+      "order": 3
+    },
+    "Conceptual models": {
+      "topic_name": "Conceptual models",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Abstract Data Types, Java Libraries"
+      ],
+      "course": "CS160",
+      "order": 4
+    },
+    "Heuristic evaluation": {
+      "topic_name": "Heuristic evaluation",
+      "prereqs": [
+        "Design cycle",
+        "Task analysis"
+      ],
+      "course": "CS160",
+      "order": 5
+    },
+    "Graphic design and typography": {
+      "topic_name": "Graphic design and typography",
+      "prereqs": [
+        "Design cycle",
+        "Storyboarding, scenarios, personas"
+      ],
+      "course": "CS160",
+      "order": 6
+    },
+    "Usability testing": {
+      "topic_name": "Usability testing",
+      "prereqs": [
+        "Heuristic evaluation",
+        "Task analysis"
+      ],
+      "course": "CS160",
+      "order": 7
+    },
+    "Data analysis": {
+      "topic_name": "Data analysis",
+      "prereqs": [
+        "Arrays",
+        "Hash Tables (including implementations with linear probing/chaining)"
+      ],
+      "course": "CS160",
+      "order": 8
+    },
+    "Interactive prototyping": {
+      "topic_name": "Interactive prototyping",
+      "prereqs": [
+        "Design cycle",
+        "Storyboarding, scenarios, personas"
+      ],
+      "course": "CS160",
+      "order": 9
+    },
+    "OS History": {
+      "topic_name": "OS History",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "CPU structure and processor design"
+      ],
+      "course": "CS162",
+      "order": 0
+    },
+    "OS Primitives": {
+      "topic_name": "OS Primitives",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "C Programming Language"
+      ],
+      "course": "CS162",
+      "order": 1
+    },
+    "Concurrency and Synchronization": {
+      "topic_name": "Concurrency and Synchronization",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "Parallelism (data-level, thread-level, request-level)"
+      ],
+      "course": "CS162",
+      "order": 2
+    },
+    "Caching": {
+      "topic_name": "Caching",
+      "prereqs": [
+        "CPU structure and processor design",
+        "Virtual Memory"
+      ],
+      "course": "CS162",
+      "order": 4
+    },
+    "Scheduling, Queuing Theory": {
+      "topic_name": "Scheduling, Queuing Theory",
+      "prereqs": [
+        "Discrete Probability",
+        "Markov Chains"
+      ],
+      "course": "CS162",
+      "order": 5
+    },
+    "Filesystems": {
+      "topic_name": "Filesystems",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "OS Primitives"
+      ],
+      "course": "CS162",
+      "order": 6
+    },
+    "Databases": {
+      "topic_name": "Databases",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "Filesystems"
+      ],
+      "course": "CS162",
+      "order": 7
+    },
+    "Distributed Systems": {
+      "topic_name": "Distributed Systems",
+      "prereqs": [
+        "Concurrency and Synchronization",
+        "Basic OS concepts (I/O, Memory Management, Networking)"
+      ],
+      "course": "CS162",
+      "order": 8
+    },
+    "Basic Security and Networking": {
+      "topic_name": "Basic Security and Networking",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "Modular Arithmetic (Euclid's Algorithm, Extended Euclid's)"
+      ],
+      "course": "CS162",
+      "order": 9
+    },
+    "System Programming": {
+      "topic_name": "System Programming",
+      "prereqs": [
+        "C Programming Language",
+        "Basic OS concepts (I/O, Memory Management, Networking)"
+      ],
+      "course": "CS162",
+      "order": 10
+    },
+    "Multi-program Systems": {
+      "topic_name": "Multi-program Systems",
+      "prereqs": [
+        "Concurrency and Synchronization",
+        "OS Primitives"
+      ],
+      "course": "CS162",
+      "order": 11
+    },
+    "Resource Allocation and Scheduling": {
+      "topic_name": "Resource Allocation and Scheduling",
+      "prereqs": [
+        "Concurrency and Synchronization",
+        "Scheduling, Queuing Theory"
+      ],
+      "course": "CS162",
+      "order": 12
+    },
+    "Lexical Analysis": {
+      "topic_name": "Lexical Analysis",
+      "prereqs": [
+        "C Programming Language",
+        "Boolean algebra, Synchronous Digital Systems and Finite State Machines"
+      ],
+      "course": "CS164",
+      "order": 0
+    },
+    "Parsing": {
+      "topic_name": "Parsing",
+      "prereqs": [
+        "Lexical Analysis",
+        "Stacks/Queues (Priority Queues)"
+      ],
+      "course": "CS164",
+      "order": 1
+    },
+    "Static Analysis: Scope and Types": {
+      "topic_name": "Static Analysis: Scope and Types",
+      "prereqs": [
+        "Lexical Analysis",
+        "Parsing"
+      ],
+      "course": "CS164",
+      "order": 2
+    },
+    "Operational Semantics": {
+      "topic_name": "Operational Semantics",
+      "prereqs": [
+        "Lexical Analysis",
+        "Parsing"
+      ],
+      "course": "CS164",
+      "order": 3
+    },
+    "Code Generation": {
+      "topic_name": "Code Generation",
+      "prereqs": [
+        "Lexical Analysis",
+        "Parsing"
+      ],
+      "course": "CS164",
+      "order": 4
+    },
+    "Lightweight Optimization": {
+      "topic_name": "Lightweight Optimization",
+      "prereqs": [
+        "Code Generation",
+        "Static Analysis: Scope and Types"
+      ],
+      "course": "CS164",
+      "order": 5
+    },
+    "Internet Design": {
+      "topic_name": "Internet Design",
+      "prereqs": [
+        "Hash Tables (including implementations with linear probing/chaining)",
+        "Graphs"
+      ],
+      "course": "CS168",
+      "order": 0
+    },
+    "Socket Programming": {
+      "topic_name": "Socket Programming",
+      "prereqs": [
+        "Exception Handling",
+        "Internet Design"
+      ],
+      "course": "CS168",
+      "order": 1
+    },
+    "Packets": {
+      "topic_name": "Packets",
+      "prereqs": [
+        "Internet Design",
+        "Socket Programming"
+      ],
+      "course": "CS168",
+      "order": 2
+    },
+    "Packet Forwarding": {
+      "topic_name": "Packet Forwarding",
+      "prereqs": [
+        "Internet Design",
+        "Packets"
+      ],
+      "course": "CS168",
+      "order": 3
+    },
+    "Packet Switch Networks": {
+      "topic_name": "Packet Switch Networks",
+      "prereqs": [
+        "Graphs",
+        "Packets"
+      ],
+      "course": "CS168",
+      "order": 4
+    },
+    "Routing Algorithms": {
+      "topic_name": "Routing Algorithms",
+      "prereqs": [
+        "Graphs",
+        "Packet Forwarding"
+      ],
+      "course": "CS168",
+      "order": 5
+    },
+    "Multiplexing": {
+      "topic_name": "Multiplexing",
+      "prereqs": [
+        "Packet Switch Networks",
+        "Socket Programming"
+      ],
+      "course": "CS168",
+      "order": 6
+    },
+    "TCP/UDP": {
+      "topic_name": "TCP/UDP",
+      "prereqs": [
+        "Socket Programming",
+        "Packets"
+      ],
+      "course": "CS168",
+      "order": 7
+    },
+    "IPv4/IPv6": {
+      "topic_name": "IPv4/IPv6",
+      "prereqs": [
+        "Internet Design",
+        "Packets"
+      ],
+      "course": "CS168",
+      "order": 8
+    },
+    "ICMP": {
+      "topic_name": "ICMP",
+      "prereqs": [
+        "Packets",
+        "IPv4/IPv6"
+      ],
+      "course": "CS168",
+      "order": 9
+    },
+    "Congestion Control": {
+      "topic_name": "Congestion Control",
+      "prereqs": [
+        "TCP/UDP",
+        "Packet Switch Networks"
+      ],
+      "course": "CS168",
+      "order": 10
+    },
+    "Interdomain Routing": {
+      "topic_name": "Interdomain Routing",
+      "prereqs": [
+        "Routing Algorithms",
+        "Graphs"
+      ],
+      "course": "CS168",
+      "order": 11
+    },
+    "Processes for software development (a.k.a. how to organize a team to work on a large-scale project)": {
+      "topic_name": "Processes for software development (a.k.a. how to organize a team to work on a large-scale project)",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Data Abstraction"
+      ],
+      "course": "CS169",
+      "order": 0
+    },
+    "Design patterns and paradigms of programming": {
+      "topic_name": "Design patterns and paradigms of programming",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Functional Programming using Scheme"
+      ],
+      "course": "CS169",
+      "order": 1
+    },
+    "Testing methodologies": {
+      "topic_name": "Testing methodologies",
+      "prereqs": [
+        "Functions and Abstraction",
+        "Object-Oriented Programming"
+      ],
+      "course": "CS169",
+      "order": 2
+    },
+    "Designing and analyzing algorithms": {
+      "topic_name": "Designing and analyzing algorithms",
+      "prereqs": [
+        "Arrays",
+        "Basic logic"
+      ],
+      "course": "CS170",
+      "order": 0
+    },
+    "Lower bounds": {
+      "topic_name": "Lower bounds",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Proofs (direct, by contradiction, by contrapositive)"
+      ],
+      "course": "CS170",
+      "order": 1
+    },
+    "Divide and Conquer Problems": {
+      "topic_name": "Divide and Conquer Problems",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Induction"
+      ],
+      "course": "CS170",
+      "order": 2
+    },
+    "Search problems": {
+      "topic_name": "Search problems",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Search (Depth First, Breadth First)"
+      ],
+      "course": "CS170",
+      "order": 3
+    },
+    "Graph Problems": {
+      "topic_name": "Graph Problems",
+      "prereqs": [
+        "Graphs",
+        "Search (Depth First, Breadth First)"
+      ],
+      "course": "CS170",
+      "order": 4
+    },
+    "Greedy Algorithms": {
+      "topic_name": "Greedy Algorithms",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Graph Problems"
+      ],
+      "course": "CS170",
+      "order": 5
+    },
+    "Linear Programming": {
+      "topic_name": "Linear Programming",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Greedy Algorithms"
+      ],
+      "course": "CS170",
+      "order": 6
+    },
+    "Dynamic Programming": {
+      "topic_name": "Dynamic Programming",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Greedy Algorithms"
+      ],
+      "course": "CS170",
+      "order": 7
+    },
+    "NP-completeness": {
+      "topic_name": "NP-completeness",
+      "prereqs": [
+        "Turing machines",
+        "Nondeterministic Turing machines"
+      ],
+      "course": "CS170",
+      "order": 8
+    },
+    "Finite Automata and regular languages": {
+      "topic_name": "Finite Automata and regular languages",
+      "prereqs": [
+        "Designing and analyzing algorithms"
+      ],
+      "course": "CS172",
+      "order": 0
+    },
+    "Turing machines": {
+      "topic_name": "Turing machines",
+      "prereqs": [
+        "Finite Automata and regular languages"
+      ],
+      "course": "CS172",
+      "order": 1
+    },
+    "Polynomial-time equivalence of all reasonable models of computation": {
+      "topic_name": "Polynomial-time equivalence of all reasonable models of computation",
+      "prereqs": [
+        "Turing machines",
+        "Designing and analyzing algorithms"
+      ],
+      "course": "CS172",
+      "order": 2
+    },
+    "Undecidable, exponential, and polynomial-time problems": {
+      "topic_name": "Undecidable, exponential, and polynomial-time problems",
+      "prereqs": [
+        "NP-completeness",
+        "Turing machines"
+      ],
+      "course": "CS172",
+      "order": 3
+    },
+    "Godel's Incompleteness Theorems": {
+      "topic_name": "Godel's Incompleteness Theorems",
+      "prereqs": [
+        "Turing machines",
+        "Undecidable, exponential, and polynomial-time problems"
+      ],
+      "course": "CS172",
+      "order": 4
+    },
+    "Kolmogorov complexity": {
+      "topic_name": "Kolmogorov complexity",
+      "prereqs": [
+        "Turing machines",
+        "Undecidable, exponential, and polynomial-time problems"
+      ],
+      "course": "CS172",
+      "order": 5
+    },
+    "Nondeterministic Turing machines": {
+      "topic_name": "Nondeterministic Turing machines",
+      "prereqs": [
+        "Turing machines",
+        "NP-completeness"
+      ],
+      "course": "CS172",
+      "order": 6
+    },
+    "Space-limited computation": {
+      "topic_name": "Space-limited computation",
+      "prereqs": [
+        "Turing machines",
+        "Nondeterministic Turing machines"
+      ],
+      "course": "CS172",
+      "order": 8
+    },
+    "Time and space hierarchy": {
+      "topic_name": "Time and space hierarchy",
+      "prereqs": [
+        "Turing machines",
+        "Space-limited computation"
+      ],
+      "course": "CS172",
+      "order": 9
+    },
+    "Select topics in language theory, complexity, and randomness": {
+      "topic_name": "Select topics in language theory, complexity, and randomness",
+      "prereqs": [
+        "Kolmogorov complexity",
+        "Space-limited computation"
+      ],
+      "course": "CS172",
+      "order": 10
+    },
+    "Events and probability": {
+      "topic_name": "Events and probability",
+      "prereqs": [
+        "Discrete Probability",
+        "Counting and Combinatorial Arguments"
+      ],
+      "course": "CS174",
+      "order": 0
+    },
+    "Random Variables, Expectation, conditional expectation": {
+      "topic_name": "Random Variables, Expectation, conditional expectation",
+      "prereqs": [
+        "Discrete Probability",
+        "Independence"
+      ],
+      "course": "CS174",
+      "order": 1
+    },
+    "Bernoulli, binomial, geometric distributions": {
+      "topic_name": "Bernoulli, binomial, geometric distributions",
+      "prereqs": [
+        "Discrete Probability",
+        "Random Variables, Expectation, conditional expectation"
+      ],
+      "course": "CS174",
+      "order": 2
+    },
+    "Program Checking/Polynomial Identities": {
+      "topic_name": "Program Checking/Polynomial Identities",
+      "prereqs": [
+        "Polynomials over finite fields (secret sharing, error-correcting codes, Berlekamp-Welsh)",
+        "Discrete Probability"
+      ],
+      "course": "CS174",
+      "order": 3
+    },
+    "Coupon collector's problem": {
+      "topic_name": "Coupon collector's problem",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS174",
+      "order": 4
+    },
+    "Variance and moments": {
+      "topic_name": "Variance and moments",
+      "prereqs": [
+        "Random Variables, Expectation, conditional expectation",
+        "Discrete Probability"
+      ],
+      "course": "CS174",
+      "order": 5
+    },
+    "Markov's inequality, Chebyshev's inequality": {
+      "topic_name": "Markov's inequality, Chebyshev's inequality",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS174",
+      "order": 6
+    },
+    "Chernoff bounds, moment generating functions": {
+      "topic_name": "Chernoff bounds, moment generating functions",
+      "prereqs": [
+        "Bounds (Markov, Chebyshev, Central Limit Theorem)",
+        "Variance and moments"
+      ],
+      "course": "CS174",
+      "order": 7
+    },
+    "Hoeffding-Azuma inequality": {
+      "topic_name": "Hoeffding-Azuma inequality",
+      "prereqs": [
+        "Conditional expectation",
+        "Chernoff bounds, moment generating functions"
+      ],
+      "course": "CS174",
+      "order": 8
+    },
+    "Balls and bins, the birthday paradox": {
+      "topic_name": "Balls and bins, the birthday paradox",
+      "prereqs": [
+        "Discrete Probability",
+        "Counting and Combinatorial Arguments"
+      ],
+      "course": "CS174",
+      "order": 9
+    },
+    "Routing in a Parallel Computer": {
+      "topic_name": "Routing in a Parallel Computer",
+      "prereqs": [
+        "Graph Theory (hypercubes, Eulerian paths, Hamiltonian paths)",
+        "Discrete Probability"
+      ],
+      "course": "CS174",
+      "order": 10
+    },
+    "The Poisson distribution, the Poisson approximation": {
+      "topic_name": "The Poisson distribution, the Poisson approximation",
+      "prereqs": [
+        "Bernoulli, binomial, geometric distributions",
+        "Random Variables, Expectation, conditional expectation"
+      ],
+      "course": "CS174",
+      "order": 11
+    },
+    "Hashing, Bloom filters": {
+      "topic_name": "Hashing, Bloom filters",
+      "prereqs": [
+        "Discrete Probability",
+        "Probability: Expectation and Variance (applications with hash tables)"
+      ],
+      "course": "CS174",
+      "order": 12
+    },
+    "Random Graphs": {
+      "topic_name": "Random Graphs",
+      "prereqs": [
+        "Graph Theory (hypercubes, Eulerian paths, Hamiltonian paths)",
+        "Discrete Probability"
+      ],
+      "course": "CS174",
+      "order": 13
+    },
+    "The probabilistic method, Lovasz local lemma": {
+      "topic_name": "The probabilistic method, Lovasz local lemma",
+      "prereqs": [
+        "Discrete Probability",
+        "Independence"
+      ],
+      "course": "CS174",
+      "order": 14
+    },
+    "Markov chains": {
+      "topic_name": "Markov chains",
+      "prereqs": [
+        "Discrete Probability",
+        "Conditional Probability"
+      ],
+      "course": "CS174",
+      "order": 15
+    },
+    "Stationary distributions, classification of states": {
+      "topic_name": "Stationary distributions, classification of states",
+      "prereqs": [
+        "Markov Chains",
+        "Markov chains"
+      ],
+      "course": "CS174",
+      "order": 16
+    },
+    "Random walks": {
+      "topic_name": "Random walks",
+      "prereqs": [
+        "Markov Chains",
+        "Discrete Probability"
+      ],
+      "course": "CS174",
+      "order": 17
+    },
+    "The Monte Carlo method, Markov chain Monte Carlo": {
+      "topic_name": "The Monte Carlo method, Markov chain Monte Carlo",
+      "prereqs": [
+        "Markov Chains",
+        "Discrete Probability"
+      ],
+      "course": "CS174",
+      "order": 18
+    },
+    "Coupling of Markov chains": {
+      "topic_name": "Coupling of Markov chains",
+      "prereqs": [
+        "Markov Chains",
+        "Stationary distributions, classification of states"
+      ],
+      "course": "CS174",
+      "order": 19
+    },
+    "Object hierarchies and instance transformations needed for the modeling of complicated scenes.": {
+      "topic_name": "Object hierarchies and instance transformations needed for the modeling of complicated scenes.",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Abstract Classes"
+      ],
+      "course": "CS184",
+      "order": 0
+    },
+    "Interactive input techniques, the basics of a graphics editor.": {
+      "topic_name": "Interactive input techniques, the basics of a graphics editor.",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Abstract Classes"
+      ],
+      "course": "CS184",
+      "order": 1
+    },
+    "The geometrical operations in the rendering pipeline: consecutive transformations, windowing, clipping, projections.": {
+      "topic_name": "The geometrical operations in the rendering pipeline: consecutive transformations, windowing, clipping, projections.",
+      "prereqs": [
+        "Object hierarchies and instance transformations needed for the modeling of complicated scenes.",
+        "Interactive input techniques, the basics of a graphics editor."
+      ],
+      "course": "CS184",
+      "order": 2
+    },
+    "Visibility determination and hidden feature elimination.": {
+      "topic_name": "Visibility determination and hidden feature elimination.",
+      "prereqs": [
+        "The geometrical operations in the rendering pipeline: consecutive transformations, windowing, clipping, projections.",
+        "Object hierarchies and instance transformations needed for the modeling of complicated scenes."
+      ],
+      "course": "CS184",
+      "order": 3
+    },
+    "Illumination and shading models for rendering.": {
+      "topic_name": "Illumination and shading models for rendering.",
+      "prereqs": [
+        "The geometrical operations in the rendering pipeline: consecutive transformations, windowing, clipping, projections.",
+        "Visibility determination and hidden feature elimination."
+      ],
+      "course": "CS184",
+      "order": 4
+    },
+    "Introduction to parametric curves and surfaces, Bezier patches and surfaces.": {
+      "topic_name": "Introduction to parametric curves and surfaces, Bezier patches and surfaces.",
+      "prereqs": [
+        "The geometrical operations in the rendering pipeline: consecutive transformations, windowing, clipping, projections.",
+        "Object hierarchies and instance transformations needed for the modeling of complicated scenes."
+      ],
+      "course": "CS184",
+      "order": 5
+    },
+    "Mesh representations and geometry processing.": {
+      "topic_name": "Mesh representations and geometry processing.",
+      "prereqs": [
+        "Graphs",
+        "Introduction to parametric curves and surfaces, Bezier patches and surfaces."
+      ],
+      "course": "CS184",
+      "order": 6
+    },
+    "Introduction to advanced rendering techniques: ray-tracing, texture mapping, radiometry and photometry.": {
+      "topic_name": "Introduction to advanced rendering techniques: ray-tracing, texture mapping, radiometry and photometry.",
+      "prereqs": [
+        "The geometrical operations in the rendering pipeline: consecutive transformations, windowing, clipping, projections.",
+        "Illumination and shading models for rendering."
+      ],
+      "course": "CS184",
+      "order": 7
+    },
+    "Animation. Inverse kinematics and particle simulation.": {
+      "topic_name": "Animation. Inverse kinematics and particle simulation.",
+      "prereqs": [
+        "Object hierarchies and instance transformations needed for the modeling of complicated scenes.",
+        "The geometrical operations in the rendering pipeline: consecutive transformations, windowing, clipping, projections."
+      ],
+      "course": "CS184",
+      "order": 8
+    },
+    "Sampling and Fourier theory.": {
+      "topic_name": "Sampling and Fourier theory.",
+      "prereqs": [],
+      "course": "CS184",
+      "order": 9
+    },
+    "Cameras and real lenses.": {
+      "topic_name": "Cameras and real lenses.",
+      "prereqs": [
+        "Sampling and Fourier theory.",
+        "Introduction to advanced rendering techniques: ray-tracing, texture mapping, radiometry and photometry."
+      ],
+      "course": "CS184",
+      "order": 10
+    },
+    "Wrangling Data: Design patterns and operators for manipulating large data sets.": {
+      "topic_name": "Wrangling Data: Design patterns and operators for manipulating large data sets.",
+      "prereqs": [
+        "Higher Order Functions",
+        "Abstract Data Types, Java Libraries"
+      ],
+      "course": "CS186",
+      "order": 0
+    },
+    "Structured Data Models: Key/Value stores and the Relational data model.": {
+      "topic_name": "Structured Data Models: Key/Value stores and the Relational data model.",
+      "prereqs": [
+        "Hash Tables (including implementations with linear probing/chaining)",
+        "Abstract Data Types, Java Libraries"
+      ],
+      "course": "CS186",
+      "order": 1
+    },
+    "Data-centric Programming: using languages like SQL, to implement scalable algorithms.": {
+      "topic_name": "Data-centric Programming: using languages like SQL, to implement scalable algorithms.",
+      "prereqs": [
+        "Wrangling Data: Design patterns and operators for manipulating large data sets.",
+        "Structured Data Models: Key/Value stores and the Relational data model."
+      ],
+      "course": "CS186",
+      "order": 2
+    },
+    "Database Design: Entity-Relationship and Object-Relational modeling, physical design, functional dependencies and normalization, and database tuning.": {
+      "topic_name": "Database Design: Entity-Relationship and Object-Relational modeling, physical design, functional dependencies and normalization, and database tuning.",
+      "prereqs": [
+        "Structured Data Models: Key/Value stores and the Relational data model.",
+        "Data-centric Programming: using languages like SQL, to implement scalable algorithms."
+      ],
+      "course": "CS186",
+      "order": 3
+    },
+    "Database application development: web-based database application implementation and object-relational mapping.": {
+      "topic_name": "Database application development: web-based database application implementation and object-relational mapping.",
+      "prereqs": [
+        "Object-Oriented Programming",
+        "Database Design: Entity-Relationship and Object-Relational modeling, physical design, functional dependencies and normalization, and database tuning."
+      ],
+      "course": "CS186",
+      "order": 4
+    },
+    "Engine Components for Big Data: disk layout, indexing, search and query processing algorithms, parallelism, query optimization, transactional concurrency control, logging and recovery, replication": {
+      "topic_name": "Engine Components for Big Data: disk layout, indexing, search and query processing algorithms, parallelism, query optimization, transactional concurrency control, logging and recovery, replication",
+      "prereqs": [
+        "Structured Data Models: Key/Value stores and the Relational data model.",
+        "Database Design: Entity-Relationship and Object-Relational modeling, physical design, functional dependencies and normalization, and database tuning."
+      ],
+      "course": "CS186",
+      "order": 5
+    },
+    "Text and Web Search: models and implementation, including Boolean search and ranking. (Note: not covered in every offering)": {
+      "topic_name": "Text and Web Search: models and implementation, including Boolean search and ranking. (Note: not covered in every offering)",
+      "prereqs": [
+        "Hash Tables (including implementations with linear probing/chaining)",
+        "Engine Components for Big Data: disk layout, indexing, search and query processing algorithms, parallelism, query optimization, transactional concurrency control, logging and recovery, replication"
+      ],
+      "course": "CS186",
+      "order": 6
+    },
+    "Search and Planning": {
+      "topic_name": "Search and Planning",
+      "prereqs": [
+        "Graphs",
+        "Search (Depth First, Breadth First)"
+      ],
+      "course": "CS188",
+      "order": 0
+    },
+    "Uninformed Search (Depth-First, Breadth-First, Uniform-Cost)": {
+      "topic_name": "Uninformed Search (Depth-First, Breadth-First, Uniform-Cost)",
+      "prereqs": [
+        "Graphs",
+        "Stacks/Queues (Priority Queues)"
+      ],
+      "course": "CS188",
+      "order": 1
+    },
+    "Informed Search (A*, Greedy Search)": {
+      "topic_name": "Informed Search (A*, Greedy Search)",
+      "prereqs": [
+        "Search (Depth First, Breadth First)",
+        "Uninformed Search (Depth-First, Breadth-First, Uniform-Cost)"
+      ],
+      "course": "CS188",
+      "order": 2
+    },
+    "Heuristics and Optimality": {
+      "topic_name": "Heuristics and Optimality",
+      "prereqs": [
+        "Search and Planning",
+        "Informed Search (A*, Greedy Search)"
+      ],
+      "course": "CS188",
+      "order": 3
+    },
+    "Constraint Satisfaction Problems": {
+      "topic_name": "Constraint Satisfaction Problems",
+      "prereqs": [
+        "Search and Planning",
+        "Graphs"
+      ],
+      "course": "CS188",
+      "order": 4
+    },
+    "Backtracking Search": {
+      "topic_name": "Backtracking Search",
+      "prereqs": [
+        "Recursion",
+        "Constraint Satisfaction Problems"
+      ],
+      "course": "CS188",
+      "order": 5
+    },
+    "Constraint Propagation (Arc Consistency)": {
+      "topic_name": "Constraint Propagation (Arc Consistency)",
+      "prereqs": [
+        "Constraint Satisfaction Problems",
+        "Backtracking Search"
+      ],
+      "course": "CS188",
+      "order": 6
+    },
+    "Exploiting Graph Structure": {
+      "topic_name": "Exploiting Graph Structure",
+      "prereqs": [
+        "Graphs",
+        "Graph Theory (hypercubes, Eulerian paths, Hamiltonian paths)"
+      ],
+      "course": "CS188",
+      "order": 7
+    },
+    "Game Trees and Tree-Structured Computation": {
+      "topic_name": "Game Trees and Tree-Structured Computation",
+      "prereqs": [
+        "Trees and Linked Lists",
+        "Search (Depth First, Breadth First)"
+      ],
+      "course": "CS188",
+      "order": 8
+    },
+    "Minimax, Expectimax, Combinations": {
+      "topic_name": "Minimax, Expectimax, Combinations",
+      "prereqs": [
+        "Recursion",
+        "Game Trees and Tree-Structured Computation"
+      ],
+      "course": "CS188",
+      "order": 9
+    },
+    "Evaluation Functions and Approximations": {
+      "topic_name": "Evaluation Functions and Approximations",
+      "prereqs": [
+        "Game Trees and Tree-Structured Computation",
+        "Minimax, Expectimax, Combinations"
+      ],
+      "course": "CS188",
+      "order": 10
+    },
+    "Alpha-Beta Pruning": {
+      "topic_name": "Alpha-Beta Pruning",
+      "prereqs": [
+        "Game Trees and Tree-Structured Computation",
+        "Minimax, Expectimax, Combinations"
+      ],
+      "course": "CS188",
+      "order": 11
+    },
+    "Decision Theory": {
+      "topic_name": "Decision Theory",
+      "prereqs": [
+        "Discrete Probability",
+        "Probabilistic Inference (Bayes Rule)"
+      ],
+      "course": "CS188",
+      "order": 12
+    },
+    "Preferences, Rationality, and Utilities": {
+      "topic_name": "Preferences, Rationality, and Utilities",
+      "prereqs": [
+        "Discrete Probability",
+        "Decision Theory"
+      ],
+      "course": "CS188",
+      "order": 13
+    },
+    "Maximum Expected Utility": {
+      "topic_name": "Maximum Expected Utility",
+      "prereqs": [
+        "Decision Theory",
+        "Discrete Probability"
+      ],
+      "course": "CS188",
+      "order": 14
+    },
+    "Markov Decision Processes": {
+      "topic_name": "Markov Decision Processes",
+      "prereqs": [
+        "Markov Chains",
+        "Maximum Expected Utility"
+      ],
+      "course": "CS188",
+      "order": 15
+    },
+    "Policies, Rewards, and Values": {
+      "topic_name": "Policies, Rewards, and Values",
+      "prereqs": [
+        "Markov Decision Processes",
+        "Maximum Expected Utility"
+      ],
+      "course": "CS188",
+      "order": 16
+    },
+    "Value Iteration": {
+      "topic_name": "Value Iteration",
+      "prereqs": [
+        "Markov Decision Processes",
+        "Markov Chains"
+      ],
+      "course": "CS188",
+      "order": 17
+    },
+    "Policy Iteration": {
+      "topic_name": "Policy Iteration",
+      "prereqs": [
+        "Markov Decision Processes",
+        "Value Iteration"
+      ],
+      "course": "CS188",
+      "order": 18
+    },
+    "Reinforcement Learning": {
+      "topic_name": "Reinforcement Learning",
+      "prereqs": [
+        "Markov Decision Processes",
+        "Discrete Probability"
+      ],
+      "course": "CS188",
+      "order": 19
+    },
+    "Math Background:Maximum likelihood estimationDecision theoryMultivariate GaussiansOptimizationMatrix Calculus": {
+      "topic_name": "Math Background:Maximum likelihood estimationDecision theoryMultivariate GaussiansOptimizationMatrix Calculus",
+      "prereqs": [
+        "Decision Theory",
+        "Distributions (discrete, continuous)"
+      ],
+      "course": "CS189",
+      "order": 0
+    },
+    "Maximum likelihood estimation": {
+      "topic_name": "Maximum likelihood estimation",
+      "prereqs": [
+        "Discrete Probability",
+        "Distributions (discrete, continuous)"
+      ],
+      "course": "CS189",
+      "order": 1
+    },
+    "Decision theory": {
+      "topic_name": "Decision theory",
+      "prereqs": [
+        "Discrete Probability",
+        "Probabilistic Inference (Bayes Rule)"
+      ],
+      "course": "CS189",
+      "order": 2
+    },
+    "Multivariate Gaussians": {
+      "topic_name": "Multivariate Gaussians",
+      "prereqs": [
+        "Distributions (discrete, continuous)",
+        "Maximum likelihood estimation"
+      ],
+      "course": "CS189",
+      "order": 3
+    },
+    "Optimization": {
+      "topic_name": "Optimization",
+      "prereqs": [
+        "Maximum likelihood estimation",
+        "Decision theory"
+      ],
+      "course": "CS189",
+      "order": 4
+    },
+    "Matrix Calculus": {
+      "topic_name": "Matrix Calculus",
+      "prereqs": [
+        "Multivariate Gaussians",
+        "Optimization"
+      ],
+      "course": "CS189",
+      "order": 5
+    },
+    "Supervised Learning:Linear regressionLogistic regressionRidge regressionLasso regressionKernel methodsSVMsNearest neighbor methodsDecision treesEnsemble methodsNeural networks": {
+      "topic_name": "Supervised Learning:Linear regressionLogistic regressionRidge regressionLasso regressionKernel methodsSVMsNearest neighbor methodsDecision treesEnsemble methodsNeural networks",
+      "prereqs": [
+        "Linear regression",
+        "Optimization"
+      ],
+      "course": "CS189",
+      "order": 6
+    },
+    "Logistic regression": {
+      "topic_name": "Logistic regression",
+      "prereqs": [
+        "Linear regression",
+        "Maximum likelihood estimation"
+      ],
+      "course": "CS189",
+      "order": 8
+    },
+    "Ridge regression": {
+      "topic_name": "Ridge regression",
+      "prereqs": [
+        "Linear regression",
+        "Optimization"
+      ],
+      "course": "CS189",
+      "order": 9
+    },
+    "Lasso regression": {
+      "topic_name": "Lasso regression",
+      "prereqs": [
+        "Ridge regression",
+        "Linear regression"
+      ],
+      "course": "CS189",
+      "order": 10
+    },
+    "Kernel methods": {
+      "topic_name": "Kernel methods",
+      "prereqs": [
+        "Optimization",
+        "Linear regression"
+      ],
+      "course": "CS189",
+      "order": 11
+    },
+    "SVMs": {
+      "topic_name": "SVMs",
+      "prereqs": [
+        "Kernel methods",
+        "Optimization"
+      ],
+      "course": "CS189",
+      "order": 12
+    },
+    "Nearest neighbor methods": {
+      "topic_name": "Nearest neighbor methods",
+      "prereqs": [
+        "Linear regression",
+        "Optimization"
+      ],
+      "course": "CS189",
+      "order": 13
+    },
+    "Decision trees": {
+      "topic_name": "Decision trees",
+      "prereqs": [
+        "Decision theory",
+        "Supervised Learning:Linear regressionLogistic regressionRidge regressionLasso regressionKernel methodsSVMsNearest neighbor methodsDecision treesEnsemble methodsNeural networks"
+      ],
+      "course": "CS189",
+      "order": 14
+    },
+    "Ensemble methods": {
+      "topic_name": "Ensemble methods",
+      "prereqs": [
+        "Decision trees",
+        "Supervised Learning:Linear regressionLogistic regressionRidge regressionLasso regressionKernel methodsSVMsNearest neighbor methodsDecision treesEnsemble methodsNeural networks"
+      ],
+      "course": "CS189",
+      "order": 15
+    },
+    "Neural networks": {
+      "topic_name": "Neural networks",
+      "prereqs": [
+        "Optimization",
+        "Matrix Calculus"
+      ],
+      "course": "CS189",
+      "order": 16
+    },
+    "Unsupervised Learning:ClusteringDimensionality reduction": {
+      "topic_name": "Unsupervised Learning:ClusteringDimensionality reduction",
+      "prereqs": [
+        "Optimization",
+        "Multivariate Gaussians"
+      ],
+      "course": "CS189",
+      "order": 17
+    },
+    "Clustering": {
+      "topic_name": "Clustering",
+      "prereqs": [
+        "Unsupervised Learning:ClusteringDimensionality reduction",
+        "Optimization"
+      ],
+      "course": "CS189",
+      "order": 18
+    },
+    "Dimensionality reduction": {
+      "topic_name": "Dimensionality reduction",
+      "prereqs": [
+        "Multivariate Gaussians",
+        "Matrix Calculus"
+      ],
+      "course": "CS189",
+      "order": 19
+    }
+  }

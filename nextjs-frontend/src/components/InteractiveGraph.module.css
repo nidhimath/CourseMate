@@ -1,0 +1,235 @@
+.interactiveGraphContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+  
+  .interactiveGraphLoading {
+    font-size: 18px;
+    color: #007bff;
+    padding: 50px;
+    text-align: center;
+    font-weight: 500;
+  }
+  
+  .interactiveGraphControls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+  
+  .randomTopicButton {
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
+  }
+  
+  .randomTopicButton:hover {
+    background: rgba(0, 123, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+  }
+  
+  .randomTopicButton:active {
+    transform: translateY(-1px);
+  }
+  
+  .currentTopicDisplay {
+    font-size: 16px;
+    background: rgba(248, 249, 250, 0.8);
+    backdrop-filter: blur(5px);
+    padding: 10px 16px;
+    border-radius: 12px;
+    color: #333333;
+    font-weight: 500;
+    border: 1px solid rgba(222, 226, 230, 0.5);
+  }
+  
+  .zoomControls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  
+  .zoomButton {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0, 123, 255, 0.9);
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+  }
+  
+  .zoomButton:hover {
+    background: rgba(0, 123, 255, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 123, 255, 0.4);
+  }
+  
+  .zoomButton:active {
+    transform: translateY(0);
+  }
+  
+  .graphVisualization {
+    border: 2px solid #007bff;
+    border-radius: 10px;
+    background-color: white;
+    overflow: hidden;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  }
+  
+  .graphVisualizationGlass {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 
+      0 8px 32px rgba(0, 0, 0, 0.1),
+      inset 0 1px 0 rgba(255, 255, 255, 0.4);
+    overflow: hidden;
+    position: relative;
+  }
+  
+  .graphVisualizationGlass::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.05) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .nodeInfoModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .nodeInfoContent {
+    background-color: white;
+    color: #333333;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    max-width: 400px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+  }
+  
+  .nodeInfoContent h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333333;
+    font-size: 20px;
+    font-weight: 600;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #007bff;
+  }
+  
+  .infoDetails {
+    text-align: left;
+    margin: 15px 0;
+  }
+  
+  .infoDetails p {
+    margin: 8px 0;
+    font-size: 16px;
+    line-height: 1.5;
+    color: #333333;
+  }
+  
+  .infoDetails p strong {
+    color: #333333;
+    font-weight: 600;
+  }
+  
+  .infoDetails ul {
+    margin: 8px 0;
+    padding-left: 20px;
+  }
+  
+  .infoDetails li {
+    margin: 4px 0;
+    font-size: 14px;
+    color: #555555;
+  }
+  
+  .closeInfoButton {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 15px;
+    width: 100%;
+    transition: background-color 0.2s ease;
+  }
+  
+  .closeInfoButton:hover {
+    background-color: #c82333;
+  }
+  
+  /* Responsive design */
+  @media (max-width: 768px) {
+    .graphVisualization {
+      width: 100% !important;
+      height: 400px !important;
+    }
+    
+    .interactiveGraphControls {
+      flex-direction: column;
+    }
+    
+    .nodeInfoContent {
+      width: 95%;
+      margin: 10px;
+    }
+  }
+  
