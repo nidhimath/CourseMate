@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import styles from './InteractiveGraph.module.css';
 
 // Dynamically import react-graph-vis to avoid SSR issues
@@ -130,6 +131,7 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
 }) => {
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
   const [network, setNetwork] = useState<any>(null);
+  const router = useRouter();
 
   // Color nodes by course with prettier gradients
   const getNodeColor = useCallback((course: string): NodeColor => {
@@ -450,6 +452,10 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
     setSelectedNode(null);
   };
 
+  const navigateToCourse = (courseCode: string): void => {
+    router.push(`/courses/${courseCode}`);
+  };
+
   if (!knowledgeGraph) {
     return <div className={styles.interactiveGraphLoading}>Loading knowledge graph...</div>;
   }
@@ -496,7 +502,16 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
             <h3>Topic Information</h3>
             <div className={styles.infoDetails}>
               <p><strong>Topic:</strong> {selectedNode.id}</p>
-              <p><strong>Course:</strong> {selectedNode.course}</p>
+              <p>
+                <strong>Course:</strong>{' '}
+                <button 
+                  onClick={() => navigateToCourse(selectedNode.course)}
+                  className={styles.courseLink}
+                  title={`Go to ${selectedNode.course} course page`}
+                >
+                  {selectedNode.course}
+                </button>
+              </p>
               <p><strong>Order:</strong> {selectedNode.order}</p>
               <p><strong>Prerequisites:</strong></p>
               <ul>
