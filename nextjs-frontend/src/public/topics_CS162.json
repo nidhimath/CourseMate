@@ -1,0 +1,110 @@
+{
+    "OS History": {
+      "topic_name": "OS History",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "CPU structure and processor design"
+      ],
+      "course": "CS162",
+      "order": 0
+    },
+    "OS Primitives": {
+      "topic_name": "OS Primitives",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "C Programming Language"
+      ],
+      "course": "CS162",
+      "order": 1
+    },
+    "Concurrency and Synchronization": {
+      "topic_name": "Concurrency and Synchronization",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "Parallelism (data-level, thread-level, request-level)"
+      ],
+      "course": "CS162",
+      "order": 2
+    },
+    "Caching": {
+      "topic_name": "Caching",
+      "prereqs": [
+        "CPU structure and processor design",
+        "Virtual Memory"
+      ],
+      "course": "CS162",
+      "order": 4
+    },
+    "Scheduling, Queuing Theory": {
+      "topic_name": "Scheduling, Queuing Theory",
+      "prereqs": [
+        "Discrete Probability",
+        "Markov Chains"
+      ],
+      "course": "CS162",
+      "order": 5
+    },
+    "Filesystems": {
+      "topic_name": "Filesystems",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "OS Primitives"
+      ],
+      "course": "CS162",
+      "order": 6
+    },
+    "Databases": {
+      "topic_name": "Databases",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "Filesystems"
+      ],
+      "course": "CS162",
+      "order": 7
+    },
+    "Distributed Systems": {
+      "topic_name": "Distributed Systems",
+      "prereqs": [
+        "Concurrency and Synchronization",
+        "Basic OS concepts (I/O, Memory Management, Networking)"
+      ],
+      "course": "CS162",
+      "order": 8
+    },
+    "Basic Security and Networking": {
+      "topic_name": "Basic Security and Networking",
+      "prereqs": [
+        "Basic OS concepts (I/O, Memory Management, Networking)",
+        "Modular Arithmetic (Euclid's Algorithm, Extended Euclid's)"
+      ],
+      "course": "CS162",
+      "order": 9
+    },
+    "System Programming": {
+      "topic_name": "System Programming",
+      "prereqs": [
+        "C Programming Language",
+        "Basic OS concepts (I/O, Memory Management, Networking)"
+      ],
+      "course": "CS162",
+      "order": 10
+    },
+    "Multi-program Systems": {
+      "topic_name": "Multi-program Systems",
+      "prereqs": [
+        "Concurrency and Synchronization",
+        "OS Primitives"
+      ],
+      "course": "CS162",
+      "order": 11
+    },
+    "Resource Allocation and Scheduling": {
+      "topic_name": "Resource Allocation and Scheduling",
+      "prereqs": [
+        "Concurrency and Synchronization",
+        "Scheduling, Queuing Theory"
+      ],
+      "course": "CS162",
+      "order": 12
+    }
+  }
