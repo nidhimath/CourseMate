@@ -2,7 +2,7 @@
 COURSE_WEBSITES = {
     # CS Core Courses
     "CS61A": "https://cs61a.org",
-    "CS61B": "https://fa25.datastructur.es/",
+    "CS61B": "https://sp25.datastructur.es/",
     "CS61C": "https://cs61c.org/fa25/",
     "CS70": "https://www.eecs70.org/",
     

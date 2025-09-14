@@ -31,8 +31,13 @@ class YouTubeEducationalSearch:
             
             return search_response['items']
         except Exception as e:
-            print(f"Error searching channel {channel_id}: {e}")
-            return []
+            error_msg = str(e).lower()
+            if 'quota' in error_msg or 'limit' in error_msg or 'exceeded' in error_msg:
+                print(f"API quota exceeded for channel {channel_id}. Stopping search.")
+                raise Exception("YouTube API quota exceeded")
+            else:
+                print(f"Error searching channel {channel_id}: {e}")
+                return []
     
     def get_video_details(self, video_id):
         """Get additional video details including duration"""
@@ -46,8 +51,13 @@ class YouTubeEducationalSearch:
                 return video_response['items'][0]
             return None
         except Exception as e:
-            print(f"Error getting video details for {video_id}: {e}")
-            return None
+            error_msg = str(e).lower()
+            if 'quota' in error_msg or 'limit' in error_msg or 'exceeded' in error_msg:
+                print(f"API quota exceeded getting video details for {video_id}")
+                raise Exception("YouTube API quota exceeded")
+            else:
+                print(f"Error getting video details for {video_id}: {e}")
+                return None
     
     def parse_duration(self, duration):
         """Convert YouTube duration format (PT4M13S) to seconds"""
@@ -164,8 +174,13 @@ class YouTubeEducationalSearch:
             return general_results
             
         except Exception as e:
-            print(f"Error searching general YouTube: {e}")
-            return []
+            error_msg = str(e).lower()
+            if 'quota' in error_msg or 'limit' in error_msg or 'exceeded' in error_msg:
+                print(f"API quota exceeded searching general YouTube")
+                raise Exception("YouTube API quota exceeded")
+            else:
+                print(f"Error searching general YouTube: {e}")
+                return []
 
     def calculate_relevance_score(self, snippet, query_keywords):
         """Simple relevance scoring based on keyword matches"""

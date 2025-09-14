@@ -1,0 +1,27 @@
+MANUAL SETUP INSTRUCTIONS FOR CS61A
+============================================================
+
+This course structure has been created for manual setup.
+Follow these steps to add your course materials:
+
+1. COURSE WEBSITE:
+   https://cs61a.org
+
+2. ADD MATERIALS:
+   - Go to each week directory (W1, W2, etc.)
+   - Add your lecture materials (PDFs, slides, notes)
+   - See INSTRUCTIONS.txt in each week directory for details
+
+3. GENERATE STUDY GUIDES:
+   python lecture_pdf_extraction.py CS61A
+
+4. FRONTEND INTEGRATION:
+   - Create API route: nextjs-frontend/src/app/api/cs61a/content/[week]/route.ts
+   - Update CourseDetail.tsx to include CS61A
+   - Test the course in the frontend
+
+5. TIPS:
+   - Use clear, descriptive filenames
+   - Organize materials by week
+   - Include both slides and notes when available
+   - Test the PDF extraction after adding materials

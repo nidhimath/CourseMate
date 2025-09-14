@@ -1,9 +1,10 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
-from models import User, Course, Lesson, Progress, Concept, Exercise, UserCourse, LessonProgress, HomeworkAssignment, db
+from models import User, Course, Lesson, Progress, Concept, Exercise, UserCourse, LessonProgress, HomeworkAssignment, WeekVideo, db
 from transcript_parser import TranscriptParser
 from course_data import get_course_info, get_available_courses, get_missing_prerequisites
 from homework_utils import process_homework_pdf
+from week_video_processor import WeekVideoProcessor
 from datetime import datetime
 import json
 import os
@@ -759,4 +760,201 @@ def delete_homework(course_code):
         
     except Exception as e:
         db.session.rollback()
+        return jsonify({'error': str(e)}), 500
+
+# Week Videos Blueprint
+week_videos_bp = Blueprint('week_videos', __name__)
+
+@week_videos_bp.route('/<course_code>/weeks/<int:week_number>/videos', methods=['GET'])
+@jwt_required()
+def get_week_videos(course_code, week_number):
+    """Get YouTube videos for a specific week of a course"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get videos from database
+        videos = WeekVideo.query.filter_by(
+            course_code=course_code.upper(),
+            week_number=week_number
+        ).order_by(WeekVideo.relevance_score.desc()).all()
+        
+        if not videos:
+            return jsonify({
+                'message': f'No videos found for {course_code} Week {week_number}',
+                'videos': []
+            }), 200
+        
+        return jsonify({
+            'course_code': course_code.upper(),
+            'week_number': week_number,
+            'videos': [video.to_dict() for video in videos]
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@week_videos_bp.route('/<course_code>/videos', methods=['GET'])
+@jwt_required()
+def get_course_videos(course_code):
+    """Get all YouTube videos for a course organized by week"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Get all videos for the course
+        videos = WeekVideo.query.filter_by(
+            course_code=course_code.upper()
+        ).order_by(WeekVideo.week_number, WeekVideo.relevance_score.desc()).all()
+        
+        # Organize by week
+        videos_by_week = {}
+        for video in videos:
+            week_num = video.week_number
+            if week_num not in videos_by_week:
+                videos_by_week[week_num] = []
+            videos_by_week[week_num].append(video.to_dict())
+        
+        return jsonify({
+            'course_code': course_code.upper(),
+            'videos_by_week': videos_by_week,
+            'total_weeks': len(videos_by_week),
+            'total_videos': len(videos)
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@week_videos_bp.route('/<course_code>/generate', methods=['POST'])
+@jwt_required()
+def generate_week_videos(course_code):
+    """Generate YouTube videos for all weeks of a course based on study guides"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        course_path = data.get('course_path')
+        max_videos_per_week = data.get('max_videos_per_week', 3)
+        
+        if not course_path:
+            return jsonify({'error': 'course_path is required'}), 400
+        
+        # Check if course path exists
+        if not os.path.exists(course_path):
+            return jsonify({'error': f'Course path does not exist: {course_path}'}), 400
+        
+        # Initialize video processor
+        try:
+            processor = WeekVideoProcessor()
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
+        
+        # Process all weeks for the course
+        results = processor.process_course_weeks(
+            course_code.upper(), 
+            course_path, 
+            max_videos_per_week
+        )
+        
+        # Check if quota was exceeded
+        quota_exceeded = any('quota exceeded' in error.lower() for error in results.get('errors', []))
+        
+        if quota_exceeded:
+            return jsonify({
+                'success': False,
+                'course_code': course_code.upper(),
+                'results': results,
+                'message': 'YouTube API quota exceeded. Please try again later.',
+                'quota_exceeded': True
+            }), 429  # Too Many Requests
+        else:
+            return jsonify({
+                'success': True,
+                'course_code': course_code.upper(),
+                'results': results,
+                'message': f'Generated {results["total_videos"]} videos for {results["processed_weeks"]} weeks'
+            }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@week_videos_bp.route('/<course_code>/weeks/<int:week_number>/generate', methods=['POST'])
+@jwt_required()
+def generate_single_week_videos(course_code, week_number):
+    """Generate YouTube videos for a specific week based on study guide"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        data = request.get_json()
+        study_guide_path = data.get('study_guide_path')
+        max_videos = data.get('max_videos', 3)
+        
+        if not study_guide_path:
+            return jsonify({'error': 'study_guide_path is required'}), 400
+        
+        # Check if study guide exists
+        if not os.path.exists(study_guide_path):
+            return jsonify({'error': f'Study guide does not exist: {study_guide_path}'}), 400
+        
+        # Initialize video processor
+        try:
+            processor = WeekVideoProcessor()
+        except ValueError as e:
+            return jsonify({'error': str(e)}), 400
+        
+        # Find videos for this week
+        try:
+            videos = processor.find_videos_for_week(
+                course_code.upper(),
+                week_number,
+                study_guide_path,
+                max_videos
+            )
+            
+            if not videos:
+                return jsonify({
+                    'message': f'No relevant videos found for {course_code} Week {week_number}',
+                    'videos': []
+                }), 200
+            
+            # Save videos to database
+            success = processor.save_week_videos(course_code.upper(), week_number, videos)
+            
+            if success:
+                return jsonify({
+                    'success': True,
+                    'course_code': course_code.upper(),
+                    'week_number': week_number,
+                    'videos': videos,
+                    'message': f'Generated and saved {len(videos)} videos for Week {week_number}'
+                }), 200
+            else:
+                return jsonify({'error': 'Failed to save videos to database'}), 500
+                
+        except Exception as e:
+            error_msg = str(e).lower()
+            if 'quota' in error_msg or 'limit' in error_msg or 'exceeded' in error_msg:
+                return jsonify({
+                    'success': False,
+                    'error': 'YouTube API quota exceeded. Please try again later.',
+                    'quota_exceeded': True
+                }), 429  # Too Many Requests
+            else:
+                return jsonify({'error': str(e)}), 500
+        
+    except Exception as e:
         return jsonify({'error': str(e)}), 500

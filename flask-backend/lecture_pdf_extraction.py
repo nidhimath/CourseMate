@@ -17,7 +17,7 @@ class PDFContentOrganizer:
     def __init__(self, output_dir: str = "claude_outputs"):
         self.final_output_dir = Path(output_dir)
         self.final_output_dir.mkdir(exist_ok=True)
-        self.content = []
+        self.extracted_content = []
         
         # Figure extraction settings
         self.zoom_factor = 2.0
@@ -32,53 +32,93 @@ class PDFContentOrganizer:
         if hasattr(self, 'temp_dir') and os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
     
-    def extract_content(self, folder_path: str) -> List[Dict[str, Any]]:
-        """Extract content from all PDFs in a folder and format for Claude API."""
-        folder = Path(folder_path)
-        pdf_paths = sorted(folder.glob("*.pdf"))  # get all PDFs in the folder
-        all_message_content = []
-
-        for pdf_path in pdf_paths:
-            doc = pymupdf.open(pdf_path)
-            pdf_name = pdf_path.stem
-            
-            text_parts = [f"# PDF: {pdf_name}\n\n"]  # Add PDF file name as header
-            # all_figures = []
-            
-            for page_num in range(len(doc)):
-                page = doc.load_page(page_num)
-                
-                # Extract text content
-                page_content = f"\n## Page {page_num + 1}\n\n"
-                text = page.get_text().strip()
-                if text:
-                    page_content += f"### Text:\n{text}\n\n"
-                
-                # Extract tables
-                tables = self._extract_tables(page)
-                if tables:
-                    page_content += "### Tables:\n"
-                    for i, table in enumerate(tables, 1):
-                        page_content += f"**Table {i}:**\n{table}\n\n"
-                
-                # Extract figures from this page
-                # page_figures = self._extract_page_figures(page, pdf_name, page_num)
-                # if page_figures:
-                #     page_content += f"### Figures:\n{len(page_figures)} figure(s) extracted from this page\n\n"
-                #     all_figures.extend(page_figures)
-                
-                text_parts.append(page_content)
-            
-            # Create message content for this PDF
-            combined_text = "".join(text_parts)
-            pdf_message_content = [{"type": "text", "text": combined_text}]
-            # pdf_message_content.extend(all_figures)
-            
-            all_message_content.extend(pdf_message_content)
-            doc.close()
+    def extract_content(self, course_code: str) -> bool:
+        """Extract content from all PDFs in a course folder and format for Claude API."""
+        course_folder = Path(course_code)
+        if not course_folder.exists():
+            print(f"Course folder {course_code} not found")
+            return False
         
-        self.content = all_message_content
-        return all_message_content
+        # Find all week folders
+        week_folders = sorted([f for f in course_folder.iterdir() if f.is_dir() and f.name.startswith('W')])
+        
+        if not week_folders:
+            print(f"No week folders found in {course_code}")
+            return False
+        
+        all_message_content = []
+        
+        for week_folder in week_folders:
+            pdf_paths = sorted(week_folder.glob("*.pdf"))
+            if not pdf_paths:
+                continue
+                
+            print(f"Processing {len(pdf_paths)} PDFs in {week_folder.name}")
+            
+            for pdf_path in pdf_paths:
+                try:
+                    doc = pymupdf.open(pdf_path)
+                    pdf_name = pdf_path.stem
+                    
+                    text_parts = [f"# PDF: {pdf_name} (Week {week_folder.name})\n\n"]
+                    
+                    for page_num in range(len(doc)):
+                        page = doc.load_page(page_num)
+                        
+                        # Extract text content
+                        page_content = f"\n## Page {page_num + 1}\n\n"
+                        text = page.get_text().strip()
+                        if text:
+                            page_content += f"### Text:\n{text}\n\n"
+                        
+                        # Extract tables
+                        tables = page.find_tables()
+                        if tables:
+                            page_content += "### Tables:\n"
+                            for i, table in enumerate(tables):
+                                try:
+                                    table_data = table.extract()
+                                    if table_data:
+                                        # Convert to markdown table
+                                        markdown_table = self._convert_to_markdown_table(table_data)
+                                        page_content += f"\n**Table {i+1}:**\n{markdown_table}\n\n"
+                                except Exception as e:
+                                    print(f"Error extracting table {i+1} from {pdf_name}: {e}")
+                        
+                        text_parts.append(page_content)
+                    
+                    doc.close()
+                    all_message_content.extend(text_parts)
+                    
+                except Exception as e:
+                    print(f"Error processing {pdf_path}: {e}")
+                    continue
+        
+        if not all_message_content:
+            print(f"No content extracted from {course_code}")
+            return False
+        
+        # Convert to the expected format for Claude API
+        combined_text = "".join(all_message_content)
+        self.extracted_content = [{"type": "text", "text": combined_text}]
+        return True
+    
+    def _convert_to_markdown_table(self, table_data):
+        """Convert table data to markdown format."""
+        if not table_data or not table_data[0]:
+            return ""
+        
+        # Create header
+        header = "| " + " | ".join(str(cell) for cell in table_data[0]) + " |"
+        separator = "| " + " | ".join("---" for _ in table_data[0]) + " |"
+        
+        # Create rows
+        rows = []
+        for row in table_data[1:]:
+            if row:  # Skip empty rows
+                rows.append("| " + " | ".join(str(cell) for cell in row) + " |")
+        
+        return "\n".join([header, separator] + rows)
     
     def _extract_page_figures(self, page, pdf_name: str, page_num: int) -> List[Dict[str, Any]]:
         """Extract figures from a page using contour detection."""
@@ -169,7 +209,7 @@ class PDFContentOrganizer:
     
     def send_to_claude_and_save(self, instruction: str, model: str = "claude-opus-4-1-20250805") -> str:
         """Send to Claude API and save only the final response."""
-        if not self.content:
+        if not hasattr(self, 'extracted_content') or not self.extracted_content:
             raise ValueError("No content extracted. Run extract_content() first.")
         
         # Load API key
@@ -184,7 +224,7 @@ class PDFContentOrganizer:
                 "type": "text", 
                 "text": instruction
             }
-        ] + self.content
+        ] + self.extracted_content
         
         message = {
             "role": "user",
@@ -238,14 +278,14 @@ class PDFContentOrganizer:
     
     def get_extraction_summary(self) -> Dict[str, Any]:
         """Get summary of what was extracted."""
-        if not self.content:
+        if not self.extracted_content:
             return {"error": "No content extracted"}
         
-        text_blocks = sum(1 for item in self.content if item["type"] == "text")
-        image_blocks = sum(1 for item in self.content if item["type"] == "image")
+        text_blocks = sum(1 for item in self.extracted_content if item["type"] == "text")
+        image_blocks = sum(1 for item in self.extracted_content if item["type"] == "image")
         
         return {
-            "total_content_blocks": len(self.content),
+            "total_content_blocks": len(self.extracted_content),
             "text_blocks": text_blocks,
             "extracted_figures": image_blocks,
             "temp_files_cleaned_up": True
@@ -385,14 +425,28 @@ def generate_study_guide_from_pdf(pdf_folder: str, reference_path: str = None) -
 
 # Example usage:
 if __name__ == "__main__":
+    import sys
+    
+    if len(sys.argv) != 2:
+        print("Usage: python lecture_pdf_extraction.py <COURSE_CODE>")
+        print("Example: python lecture_pdf_extraction.py CS61A")
+        sys.exit(1)
+    
+    course_code = sys.argv[1].upper()
+    print(f"Processing course: {course_code}")
+    
     organizer = PDFContentOrganizer()
     
-    # Extract content from PDF
-    organizer.extract_content("lecture1.pdf")
+    # Extract content from course folder
+    success = organizer.extract_content(course_code)
+    
+    if not success:
+        print(f"No PDFs found in {course_code}/ directory")
+        sys.exit(1)
     
     # Send to Claude and save only the output
     instruction = """
-        You are an educational content assistant. I will provide you with content extracted from a PDF, including text sections and markdown-formatted tables. Your task is to create **Khan Academy-style study notes**.
+        You are an educational content assistant. I will provide you with content extracted from PDFs, including text sections and markdown-formatted tables. Your task is to create **Khan Academy-style study notes**.
 
         Requirements:
 

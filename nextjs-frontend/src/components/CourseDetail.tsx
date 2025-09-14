@@ -27,6 +27,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Assignments from './Assignments';
 import TopicGraphModal from './TopicGraphModal';
 import CourseGraphModal from './CourseGraphModal';
+import WeekVideos from './WeekVideos';
 
 interface Lesson {
   id: string;
@@ -157,8 +158,8 @@ export default function CourseDetail({
     console.log('fetchLessons: Search params:', Object.fromEntries(searchParams.entries()));
     setIsLoading(true);
     try {
-      // For courses with study guides (CS162, CS170, EECS126), generate lessons from content
-      if (['CS162', 'CS170', 'EECS126'].includes(courseCode)) {
+      // For courses with study guides (CS162, CS170, EECS126, CS61B), generate lessons from content
+      if (['CS162', 'CS170', 'EECS126', 'CS61B'].includes(courseCode)) {
         const courseLessons = await generateLessons(selectedWeek, courseCode);
         console.log('Generated lessons for week', selectedWeek, ':', courseLessons.length, 'lessons');
         setLessons(courseLessons);
@@ -320,8 +321,9 @@ export default function CourseDetail({
 
         {/* Tabs */}
         <Tabs defaultValue="lessons" className="mb-6">
-          <TabsList className="grid w-full grid-cols-2 max-w-md">
+          <TabsList className="grid w-full grid-cols-3 max-w-lg">
             <TabsTrigger value="lessons">Lessons</TabsTrigger>
+            <TabsTrigger value="videos">Videos</TabsTrigger>
             <TabsTrigger value="assignments">Assignments</TabsTrigger>
           </TabsList>
 
@@ -470,6 +472,48 @@ export default function CourseDetail({
                     </p>
                   </div>
                 )}
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="videos" className="mt-6">
+            <div className="flex gap-6">
+              {/* Week Selector */}
+              <div className="w-48">
+                <div className="text-sm font-medium text-gray-700 mb-3">Week:</div>
+                <div className="space-y-2">
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15].map((week) => (
+                    <Button
+                      key={week}
+                      variant={selectedWeek === week ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => {
+                        console.log('CourseDetail: Week button clicked, setting week to:', week);
+                        setSelectedWeek(week);
+                        // Update URL to reflect the selected week
+                        const url = new URL(window.location.href);
+                        url.searchParams.set('week', week.toString());
+                        console.log('CourseDetail: Updating URL to:', url.pathname + url.search);
+                        router.push(url.pathname + url.search);
+                      }}
+                      className="w-full justify-start"
+                    >
+                      {week}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Videos Content */}
+              <div className="flex-1">
+                <WeekVideos 
+                  courseCode={courseCode} 
+                  weekNumber={selectedWeek}
+                  onVideoClick={(video) => {
+                    // Open video in new tab
+                    window.open(video.video_url, '_blank');
+                  }}
+                />
               </div>
             </div>
           </TabsContent>

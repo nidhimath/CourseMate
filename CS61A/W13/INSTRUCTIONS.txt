@@ -1,0 +1,22 @@
+INSTRUCTIONS FOR CS61A WEEK 13
+==================================================
+
+1. Add your lecture materials to this directory:
+   - PDF files (lecture slides, notes, handouts)
+   - PowerPoint files (.ppt, .pptx)
+   - Word documents (.doc, .docx)
+   - Any other relevant materials
+
+2. Name your files clearly:
+   - lecture_1.pdf
+   - slides_1.pdf
+   - notes_1.pdf
+   - etc.
+
+3. After adding materials, run:
+   python lecture_pdf_extraction.py CS61A
+
+4. This will generate study guides in the {course_code}_New/ directory
+
+5. For frontend integration, create:
+   nextjs-frontend/src/app/api/cs61a/content/[week]/route.ts

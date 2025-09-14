@@ -256,3 +256,42 @@ class HomeworkAssignment(db.Model):
             'created_at': self.created_at.isoformat(),
             'updated_at': self.updated_at.isoformat()
         }
+
+class WeekVideo(db.Model):
+    __tablename__ = 'week_videos'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    course_code = db.Column(db.String(20), nullable=False)  # CS162, CS170, etc.
+    week_number = db.Column(db.Integer, nullable=False)  # 1, 2, 3, etc.
+    topic = db.Column(db.String(200), nullable=False)  # Main topic for this video
+    video_title = db.Column(db.String(300), nullable=False)
+    video_url = db.Column(db.String(500), nullable=False)
+    video_id = db.Column(db.String(50), nullable=False)  # YouTube video ID
+    channel_name = db.Column(db.String(100), nullable=False)
+    duration_seconds = db.Column(db.Integer, nullable=False)
+    relevance_score = db.Column(db.Float, nullable=False)
+    thumbnail_url = db.Column(db.String(500), nullable=True)
+    description = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Unique constraint to prevent duplicate videos for same week/topic
+    __table_args__ = (db.UniqueConstraint('course_code', 'week_number', 'topic', name='unique_week_topic_video'),)
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'course_code': self.course_code,
+            'week_number': self.week_number,
+            'topic': self.topic,
+            'video_title': self.video_title,
+            'video_url': self.video_url,
+            'video_id': self.video_id,
+            'channel_name': self.channel_name,
+            'duration_seconds': self.duration_seconds,
+            'relevance_score': self.relevance_score,
+            'thumbnail_url': self.thumbnail_url,
+            'description': self.description,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat()
+        }
