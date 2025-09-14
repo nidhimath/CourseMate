@@ -11,6 +11,7 @@ import os
 import tempfile
 import shutil
 from PIL import Image
+import pytesseract
 
 class PDFContentOrganizer:
     """Extract figures, text, and tables from PDF and format for Claude API."""
@@ -63,61 +64,78 @@ class PDFContentOrganizer:
                     for i, table in enumerate(tables, 1):
                         page_content += f"**Table {i}:**\n{table}\n\n"
                 
-                # Extract figures from this page
+                # Extract figures (largest per page via contour) + OCR
                 page_figures = self._extract_page_figures(page, pdf_name, page_num)
-                if page_figures:
-                    for fig in page_figures:
-                        if fig["hash"] not in seen_hashes:
-                            seen_hashes.add(fig["hash"])
-                            pdf_message_content.append({
-                                "type": "image",
-                                "source": fig["source"]
-                            })
-                            page_content += "### Figures:\n1 unique figure extracted\n\n"
+                figure_count = 0
+                for fig in page_figures:
+                    if fig["hash"] not in seen_hashes:
+                        seen_hashes.add(fig["hash"])
+                        # Include OCR metadata when adding to message content
+                        image_block = {
+                            "type": "image",
+                            "source": fig["source"]
+                        }
+                        # Add OCR text to the page content if available
+                        if fig.get("metadata", {}).get("ocr"):
+                            page_content += f"**Figure OCR Text:** {fig['metadata']['ocr']}\n\n"
+                        pdf_message_content.append(image_block)
+                        figure_count += 1
+                
+                if figure_count > 0:
+                    page_content += f"### Figures:\n{figure_count} unique figure(s) extracted\n\n"
+
 
                 text_parts.append(page_content)
             
-            # Create message content for this PDF
+            # Combine text parts and prepend text block
             combined_text = "".join(text_parts)
-            pdf_message_content = [{"type": "text", "text": combined_text}]
-            # pdf_message_content.extend(all_figures)
-            
+            pdf_message_content.insert(0, {"type": "text", "text": combined_text})
+
             all_message_content.extend(pdf_message_content)
             doc.close()
-        
-        self.content = all_message_content
-        return all_message_content
+    
+            self.content = all_message_content
+            return all_message_content
+
     
     def _extract_page_figures(self, page, pdf_name: str, page_num: int) -> List[Dict[str, Any]]:
-        """Extract figures from a page using contour detection."""
-        # Convert page to image
+        """Extract largest figure from page, crop via contour, run OCR, return as API-ready dict."""
         matrix = pymupdf.Matrix(self.zoom_factor, self.zoom_factor)
         pix = page.get_pixmap(matrix=matrix)
         img_data = pix.tobytes("png")
-        
-        # Convert to OpenCV format
+
+        # Convert to OpenCV
         nparr = np.frombuffer(img_data, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        
-        # Auto-crop figures
+
+        # Crop with contour detection
         cropped_figures = self._auto_crop_figures(img)
         if not cropped_figures:
             return []
-        
+
+        # Pick largest figure
         largest_fig = max(cropped_figures, key=lambda f: f.shape[0] * f.shape[1])
+
+        # Run OCR on the cropped figure
+        ocr_text = self.run_ocr(largest_fig)
+
+        # Get hash profile
         pil_img = Image.fromarray(cv2.cvtColor(largest_fig, cv2.COLOR_BGR2RGB))
         img_hash = self._calculate_image_hash(pil_img)
-    
-        # Convert to base64 for API
+
+        # Encode to base64 for Claude API
         _, buffer = cv2.imencode('.png', largest_fig)
         img_base64 = base64.b64encode(buffer).decode()
-        
+
         return [{
             "type": "image",
             "source": {
                 "type": "base64",
                 "media_type": "image/png",
                 "data": img_base64
+            },
+            "metadata": {
+                "ocr": ocr_text
             },
             "hash": img_hash
         }]
@@ -128,6 +146,19 @@ class PDFContentOrganizer:
         avg = pixels.mean()
         return ''.join(['1' if p > avg else '0' for p in pixels])
 
+    def run_ocr(self, cropped_img) -> str:
+        """
+        Run OCR on a cropped figure (OpenCV image).
+        Returns extracted text as a string.
+        """
+        # Convert OpenCV (BGR) -> PIL (RGB)
+        pil_img = Image.fromarray(cv2.cvtColor(cropped_img, cv2.COLOR_BGR2RGB))
+        
+        # Run OCR with Tesseract
+        text = pytesseract.image_to_string(pil_img, config="--psm 6")
+        
+        # Clean up text a bit
+        return text.strip()
     
     def _auto_crop_figures(self, img: np.ndarray) -> List[np.ndarray]:
         """Figure detection and cropping logic."""
@@ -245,6 +276,7 @@ class PDFContentOrganizer:
             
         except requests.exceptions.RequestException as e:
             error_response = {"error": str(e), "timestamp": __import__('datetime').datetime.now().isoformat()}
+            timestamp = __import__('datetime').datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"claude_error_{timestamp}.json"
             filepath = self.final_output_dir / filename
             
