@@ -26,6 +26,7 @@ import {
 import { useRouter, useSearchParams } from 'next/navigation';
 import Assignments from './Assignments';
 import TopicGraphModal from './TopicGraphModal';
+import CourseGraphModal from './CourseGraphModal';
 
 interface Lesson {
   id: string;
@@ -66,6 +67,7 @@ export default function CourseDetail({
   const [lessonContent, setLessonContent] = useState<{[key: string]: any}>({});
   const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
   const [selectedLessonContent, setSelectedLessonContent] = useState<string>('');
+  const [showCourseGraph, setShowCourseGraph] = useState(false);
 
   const toggleLessonExpansion = (lessonId: string) => {
     const newExpanded = new Set(expandedLessons);
@@ -287,8 +289,19 @@ export default function CourseDetail({
               </div>
             </div>
             
-            {/* Progress Card */}
-            <Card className="w-64">
+            <div className="flex flex-col gap-4">
+              {/* Course Graph Button */}
+              <Button
+                onClick={() => setShowCourseGraph(true)}
+                variant="outline"
+                className="w-64"
+              >
+                <Target className="h-4 w-4 mr-2" />
+                View Course Graph
+              </Button>
+              
+              {/* Progress Card */}
+              <Card className="w-64">
               <CardContent className="p-6 text-center">
                 <div className="text-3xl font-bold text-gray-900 mb-1">
                   {overallProgress}%
@@ -474,6 +487,14 @@ export default function CourseDetail({
         lessonContent={selectedLessonContent}
         courseCode={courseCode}
       />
+      
+      {/* Course Graph Modal */}
+      <CourseGraphModal
+        isOpen={showCourseGraph}
+        onClose={() => setShowCourseGraph(false)}
+        courseCode={courseCode}
+      />
+      </div>
     </div>
   );
 }

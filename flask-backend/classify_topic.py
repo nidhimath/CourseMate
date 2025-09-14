@@ -27,18 +27,37 @@ def classify_topic():
                 'error': 'Content and courseCode are required'
             }), 400
 
-        # Currently only supporting CS162
-        if course_code != 'CS162':
+        # Supported courses
+        SUPPORTED_COURSES = ['CS162', 'CS170', 'EECS126']
+        
+        if course_code not in SUPPORTED_COURSES:
             return jsonify({
-                'error': 'Topic classification only supported for CS162'
+                'error': f'Topic classification only supported for: {", ".join(SUPPORTED_COURSES)}'
             }), 400
 
-        # Load topics from JSON file
-        topics_file_path = os.path.join(os.path.dirname(__file__), '..', 'nextjs-frontend', 'src', 'public', 'topics_CS162.json')
+        # Load topics from JSON file - try both locations
+        topics_file_path = os.path.join(
+            os.path.dirname(__file__), 
+            '..', 
+            'nextjs-frontend', 
+            'src', 
+            'public', 
+            f'topics_{course_code}.json'
+        )
+        
+        # If not found, try the standard public directory
+        if not os.path.exists(topics_file_path):
+            topics_file_path = os.path.join(
+                os.path.dirname(__file__), 
+                '..', 
+                'nextjs-frontend', 
+                'public', 
+                f'topics_{course_code}.json'
+            )
         
         if not os.path.exists(topics_file_path):
             return jsonify({
-                'error': 'Topics file not found'
+                'error': f'Topics file not found for {course_code}'
             }), 500
 
         with open(topics_file_path, 'r', encoding='utf-8') as f:
@@ -54,7 +73,7 @@ def classify_topic():
             }), 500
 
         # Create the prompt for Claude
-        prompt = f"""Given this CS162 lesson content and the following list of topics, identify which SINGLE topic this lesson primarily covers.
+        prompt = f"""Given this {course_code} lesson content and the following list of topics, identify which SINGLE topic this lesson primarily covers.
 
 Available topics:
 {chr(10).join([f"- {topic}" for topic in available_topics])}
@@ -122,7 +141,7 @@ Topic:"""
             # Fallback to a default topic if no good match found
             return jsonify({
                 'topic': available_topics[0],  # Default to first topic
-                'warning': 'Could not accurately classify topic, using default'
+                'warning': f'Could not accurately classify topic for {course_code}, using default'
             })
 
         return jsonify({'topic': identified_topic})

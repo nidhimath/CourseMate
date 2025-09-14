@@ -1,0 +1,83 @@
+{
+    "Designing and analyzing algorithms": {
+      "topic_name": "Designing and analyzing algorithms",
+      "prereqs": [
+        "Arrays",
+        "Basic logic"
+      ],
+      "course": "CS170",
+      "order": 0
+    },
+    "Lower bounds": {
+      "topic_name": "Lower bounds",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Proofs (direct, by contradiction, by contrapositive)"
+      ],
+      "course": "CS170",
+      "order": 1
+    },
+    "Divide and Conquer Problems": {
+      "topic_name": "Divide and Conquer Problems",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Induction"
+      ],
+      "course": "CS170",
+      "order": 2
+    },
+    "Search problems": {
+      "topic_name": "Search problems",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Search (Depth First, Breadth First)"
+      ],
+      "course": "CS170",
+      "order": 3
+    },
+    "Graph Problems": {
+      "topic_name": "Graph Problems",
+      "prereqs": [
+        "Graphs",
+        "Search (Depth First, Breadth First)"
+      ],
+      "course": "CS170",
+      "order": 4
+    },
+    "Greedy Algorithms": {
+      "topic_name": "Greedy Algorithms",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Graph Problems"
+      ],
+      "course": "CS170",
+      "order": 5
+    },
+    "Linear Programming": {
+      "topic_name": "Linear Programming",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Greedy Algorithms"
+      ],
+      "course": "CS170",
+      "order": 6
+    },
+    "Dynamic Programming": {
+      "topic_name": "Dynamic Programming",
+      "prereqs": [
+        "Designing and analyzing algorithms",
+        "Greedy Algorithms"
+      ],
+      "course": "CS170",
+      "order": 7
+    },
+    "NP-completeness": {
+      "topic_name": "NP-completeness",
+      "prereqs": [
+        "Turing machines",
+        "Nondeterministic Turing machines"
+      ],
+      "course": "CS170",
+      "order": 8
+    }
+  }
