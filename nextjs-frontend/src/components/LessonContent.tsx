@@ -9,10 +9,12 @@ import {
   ArrowLeft, 
   CheckCircle,
   BookOpen,
-  Clock
+  Clock,
+  Info
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useLessonContext } from '@/contexts/LessonContext';
+import TopicGraphModal from './TopicGraphModal';
 
 interface LessonContentProps {
   courseCode: string;
@@ -33,6 +35,7 @@ export default function LessonContent({
   const [isLoading, setIsLoading] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [isGraphModalOpen, setIsGraphModalOpen] = useState(false);
 
   useEffect(() => {
     fetchLessonContent();
@@ -154,6 +157,14 @@ export default function LessonContent({
     return `## ${groupTitle}\n\n${combinedContent}`;
   };
 
+  const handleInfoIconClick = () => {
+    setIsGraphModalOpen(true);
+  };
+
+  const handleCloseGraphModal = () => {
+    setIsGraphModalOpen(false);
+  };
+
   const handleToggleComplete = async () => {
     try {
       console.log('LessonContent: Toggling completion for lesson:', lessonId);
@@ -252,6 +263,15 @@ export default function LessonContent({
               </div>
               
               <div className="flex items-center gap-2">
+                <button
+                  onClick={handleInfoIconClick}
+                  className="p-2 hover:bg-red-100 rounded-full transition-colors group border-2 border-red-500"
+                  title="View topic relationships"
+                  aria-label="View topic relationships"
+                >
+                  <Info className="h-6 w-6 text-red-500 group-hover:text-red-700 font-bold" />
+                </button>
+                
                 {isCompleted && (
                   <>
                     <Badge className="bg-green-100 text-green-800">
@@ -291,6 +311,14 @@ export default function LessonContent({
         </div>
 
       </div>
+      
+      {/* Topic Graph Modal */}
+      <TopicGraphModal
+        isOpen={isGraphModalOpen}
+        onClose={handleCloseGraphModal}
+        lessonContent={content}
+        courseCode={courseCode}
+      />
     </div>
   );
 }
