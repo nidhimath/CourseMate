@@ -10,6 +10,7 @@ import numpy as np
 import os
 import tempfile
 import shutil
+from PIL import Image
 
 class PDFContentOrganizer:
     """Extract figures, text, and tables from PDF and format for Claude API."""
@@ -32,55 +33,60 @@ class PDFContentOrganizer:
         if hasattr(self, 'temp_dir') and os.path.exists(self.temp_dir):
             shutil.rmtree(self.temp_dir)
     
-    def extract_content(self, pdf_path: str) -> List[Dict[str, Any]]:
-        """Extract everything and format for Claude API."""
-        doc = pymupdf.open(pdf_path)
-        pdf_name = Path(pdf_path).stem
-        
-        text_parts = []
-        all_figures = []
-        
-        for page_num in range(len(doc)):
-            page = doc.load_page(page_num)
+    def extract_content(self, folder_path: str) -> List[Dict[str, Any]]:
+        """Extract content from all PDFs in a folder and format for Claude API."""
+        folder = Path(folder_path)
+        pdf_paths = sorted(folder.glob("*.pdf"))  # get all PDFs in the folder
+        all_message_content = []
+        seen_hashes = set()
+
+        for pdf_path in pdf_paths:
+            doc = pymupdf.open(pdf_path)
+            pdf_name = pdf_path.stem
             
-            # Extract text content
-            page_content = f"\n## Page {page_num + 1}\n\n"
+            text_parts = [f"# PDF: {pdf_name}\n\n"]  # Add PDF file name as header
+            pdf_message_content = []  # text + figures for this PDF
             
-            text = page.get_text().strip()
-            if text:
-                page_content += f"### Text:\n{text}\n\n"
+            for page_num in range(len(doc)):
+                page = doc.load_page(page_num)
+                
+                # Extract text content
+                page_content = f"\n## Page {page_num + 1}\n\n"
+                text = page.get_text().strip()
+                if text:
+                    page_content += f"### Text:\n{text}\n\n"
+                
+                # Extract tables
+                tables = self._extract_tables(page)
+                if tables:
+                    page_content += "### Tables:\n"
+                    for i, table in enumerate(tables, 1):
+                        page_content += f"**Table {i}:**\n{table}\n\n"
+                
+                # Extract figures from this page
+                page_figures = self._extract_page_figures(page, pdf_name, page_num)
+                if page_figures:
+                    for fig in page_figures:
+                        if fig["hash"] not in seen_hashes:
+                            seen_hashes.add(fig["hash"])
+                            pdf_message_content.append({
+                                "type": "image",
+                                "source": fig["source"]
+                            })
+                            page_content += "### Figures:\n1 unique figure extracted\n\n"
+
+                text_parts.append(page_content)
             
-            # Extract tables
-            tables = self._extract_tables(page)
-            if tables:
-                page_content += "### Tables:\n"
-                for i, table in enumerate(tables, 1):
-                    page_content += f"**Table {i}:**\n{table}\n\n"
+            # Create message content for this PDF
+            combined_text = "".join(text_parts)
+            pdf_message_content = [{"type": "text", "text": combined_text}]
+            # pdf_message_content.extend(all_figures)
             
-            # Extract figures from this page
-            page_figures = self._extract_page_figures(page, pdf_name, page_num)
-            if page_figures:
-                page_content += f"### Figures:\n{len(page_figures)} figure(s) extracted from this page\n\n"
-                all_figures.extend(page_figures)
-            
-            text_parts.append(page_content)
+            all_message_content.extend(pdf_message_content)
+            doc.close()
         
-        # Create message content
-        message_content = []
-        
-        # Add text content
-        combined_text = "".join(text_parts)
-        message_content.append({
-            "type": "text",
-            "text": combined_text
-        })
-        
-        # Add all extracted figures
-        message_content.extend(all_figures)
-        
-        doc.close()
-        self.content = message_content
-        return message_content
+        self.content = all_message_content
+        return all_message_content
     
     def _extract_page_figures(self, page, pdf_name: str, page_num: int) -> List[Dict[str, Any]]:
         """Extract figures from a page using contour detection."""
@@ -95,23 +101,33 @@ class PDFContentOrganizer:
         
         # Auto-crop figures
         cropped_figures = self._auto_crop_figures(img)
+        if not cropped_figures:
+            return []
         
-        api_figures = []
-        for i, cropped in enumerate(cropped_figures):
-            # Convert directly to base64 for API (no permanent saving)
-            _, buffer = cv2.imencode('.png', cropped)
-            img_base64 = base64.b64encode(buffer).decode()
-            
-            api_figures.append({
-                "type": "image",
-                "source": {
-                    "type": "base64",
-                    "media_type": "image/png",
-                    "data": img_base64
-                }
-            })
+        largest_fig = max(cropped_figures, key=lambda f: f.shape[0] * f.shape[1])
+        pil_img = Image.fromarray(cv2.cvtColor(largest_fig, cv2.COLOR_BGR2RGB))
+        img_hash = self._calculate_image_hash(pil_img)
+    
+        # Convert to base64 for API
+        _, buffer = cv2.imencode('.png', largest_fig)
+        img_base64 = base64.b64encode(buffer).decode()
         
-        return api_figures
+        return [{
+            "type": "image",
+            "source": {
+                "type": "base64",
+                "media_type": "image/png",
+                "data": img_base64
+            },
+            "hash": img_hash
+        }]
+
+    def _calculate_image_hash(self, img: Image.Image) -> str:
+        img = img.resize((8, 8), Image.Resampling.LANCZOS)
+        pixels = np.array(img).flatten()
+        avg = pixels.mean()
+        return ''.join(['1' if p > avg else '0' for p in pixels])
+
     
     def _auto_crop_figures(self, img: np.ndarray) -> List[np.ndarray]:
         """Figure detection and cropping logic."""
@@ -253,13 +269,74 @@ class PDFContentOrganizer:
             "temp_files_cleaned_up": True
         }
 
-def generate_study_guide_from_pdf(pdf_file_path: str, instruction: str = None) -> Dict[str, Any]:
+    def extract_structured_pdf(self, pdf_path: str, max_pages: int = 2):
+        """
+        Extract structured text info from a PDF using PyMuPDF.
+        Returns both the raw text and a style profile.
+        """
+        pdf_path = Path(pdf_path)
+        if not pdf_path.exists():
+            raise FileNotFoundError(f"PDF not found: {pdf_path}")
+
+        doc = pymupdf.open(pdf_path)
+        structured_data = []
+        all_text = []
+
+        # Process only the first max_pages
+        for page_num in range(min(len(doc), max_pages)):
+            page = doc.load_page(page_num)
+            page_dict = page.get_text("dict")
+
+            for block in page_dict["blocks"]:
+                if block["type"] == 0:  # text block
+                    for line in block["lines"]:
+                        for span in line["spans"]:
+                            text = span["text"].strip()
+                            if not text:
+                                continue
+                            structured_data.append({
+                                "text": text,
+                                "size": span["size"],
+                                "flags": span["flags"],  # 2 = bold, 1 = italic
+                                "font": span["font"]
+                            })
+                            all_text.append(text)
+
+        # Build style profile
+        headings = set()
+        uses_bullets = False
+        uses_tables = False
+
+        for span in structured_data:
+            text = span["text"]
+            # Detect headings (bold or larger font)
+            if span["size"] >= 12 or span["flags"] & 2:
+                headings.add(text)
+            # Detect bullets
+            if text.startswith(("-", "*", "•")):
+                uses_bullets = True
+            # Detect tables (rough)
+            if "|" in text:
+                uses_tables = True
+
+        style_profile = {
+            "example_headings": list(headings)[:5],  # show up to 5 headings
+            "uses_bullets": uses_bullets,
+            "uses_tables": uses_tables
+        }
+
+        # Combine all text as plain content
+        pdf_text = "\n".join(all_text)
+
+        return pdf_text, style_profile
+
+def generate_study_guide_from_pdf(pdf_folder: str, reference_path: str = None) -> Dict[str, Any]:
     """
     Function to convert PDF to Khan Academy-style study guide.
     
     Args:
-        pdf_file_path (str): Path to the PDF file
-        instruction (str): Instruction fed into Claude
+        pdf_folder (str): Path to the PDF folder
+        reference_path (str): Path to the reference pdf (class A)
         
     Returns:
         Dict containing:
@@ -270,25 +347,46 @@ def generate_study_guide_from_pdf(pdf_file_path: str, instruction: str = None) -
     """
     try:
         organizer = PDFContentOrganizer()
-        organizer.extract_content(pdf_file_path)
-        
+        organizer.extract_content(pdf_folder)
+
+        # Get the reference text content and style profile
+        if not reference_path:
+            reference_path = "reference.pdf"
+        reference_content, style_profile = organizer.extract_structured_pdf(reference_path, 2)
+
         # Send to Claude and get the output file path
-        if not instruction:
-            instruction = """
-                You are an educational content assistant. I will provide you with content extracted from a PDF, including text sections and markdown-formatted tables. Your task is to create **Khan Academy-style study notes**.
+        instruction = f"""
+            You are an expert educational content assistant. I will provide content extracted from a PDF along with a reference style profile.  
 
-                Requirements:
+            Your task: Create **study notes that cover ALL of the input content**, in the **exact same style, structure, and tone** as the reference PDF.  
 
-                1. Organize the content into **clear sections and subsections** using headings (##, ###).  
-                2. Summarize text into **short, digestible bullet points**.  
-                3. Include **markdown tables only if they are relevant** to the concept being explained. Do not insert unrelated tables.   
-                4. Ignore any images for now.  
-                5. Include a small "Key Points" summary at the end of each major section.  
-                6. Keep explanations **concise, educational, and easy to follow**, like Khan Academy notes.  
-                7. If table entries use `<br>` tags, you may keep them as-is or convert them into lists inside the cell for readability.
+            Instructions:  
+            1. **Reorganize by Content**:  
+            - Do NOT structure notes by lectures or source divisions.  
+            - Instead, group and order the material by topic/content so that the notes flow logically for a student studying the material.  
+            - Merge overlapping sections if needed to avoid repetition.  
 
-                Here is the content:
-            """
+            2. **Ensure Full Coverage**:  
+            - Include **every concept** from the input, even if it is briefly mentioned.  
+            - No sections should be omitted.  
+
+            3. **Replicate Reference Style**:  
+            - Match the style, headings, bullet usage, and tables exactly as in the reference profile.  
+            - Use consistent formatting for definitions, key points, and examples.  
+            - If tables or lists are used in the reference, apply them here as well.  
+
+            4. **Clarity and Flow**:  
+            - Present the content in a clear, educational order, so it feels like a single cohesive study guide.  
+            - Avoid fragmentation across "lectures." Focus on *content-first* organization.  
+
+            Reference Passage:  
+            <Start Reference>
+            {reference_content}
+            <End Reference>
+
+            Below is the full content to convert into study notes:
+        """
+        
         output_file = organizer.send_to_claude_and_save(instruction)
         
         # Read the Claude response
