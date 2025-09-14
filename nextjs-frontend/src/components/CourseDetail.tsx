@@ -36,6 +36,7 @@ interface Lesson {
   progress: number; // 0-100
   week: number;
   order: number;
+  content?: string;
 }
 
 interface CourseDetailProps {
@@ -94,176 +95,7 @@ export default function CourseDetail({
     }
   };
 
-  const generateLessonContent = (lesson: Lesson) => {
-    const content = lessonContent[lesson.id];
-    const [week, lessonNumber] = lesson.id.split('-');
-    
-    // If we have actual content from the API, use it
-    if (content && content.sections && content.content) {
-      const sections = content.sections;
-      const lessonIndex = parseInt(lessonNumber) - 1;
-      
-      if (sections[lessonIndex]) {
-        const sectionTitle = sections[lessonIndex];
-        
-        // Extract key information from the actual content
-        const fullContent = content.content;
-        const sectionContent = extractSectionContent(fullContent, sectionTitle);
-        
-        return {
-          coreConcepts: extractCoreConcepts(sectionContent, sectionTitle),
-          keyTradeoffs: extractKeyTradeoffs(sectionContent, sectionTitle),
-          keyInformation: extractKeyInformation(sectionContent, sectionTitle),
-          leadingQuestions: generateLeadingQuestions(sectionTitle, sectionContent),
-          reflectionQuestion: `Reflect on ${sectionTitle}. How does this concept relate to the broader operating systems principles you've learned? What are the practical implications for system design?`
-        };
-      }
-    }
 
-    // Fallback content if no real content is available
-    return {
-      coreConcepts: [
-        `Week ${week} Core Concept 1: Fundamental principles`,
-        `Week ${week} Core Concept 2: Key methodologies`,
-        `Week ${week} Core Concept 3: Practical applications`,
-        `Week ${week} Core Concept 4: Advanced topics`
-      ],
-      keyTradeoffs: [
-        `Week ${week} Tradeoff 1: Performance vs. Complexity`,
-        `Week ${week} Tradeoff 2: Memory vs. Speed`,
-        `Week ${week} Tradeoff 3: Security vs. Usability`,
-        `Week ${week} Tradeoff 4: Scalability vs. Simplicity`
-      ],
-      keyInformation: [
-        `Week ${week} Lesson ${lessonNumber} key information point 1`,
-        `Week ${week} Lesson ${lessonNumber} key information point 2`,
-        `Week ${week} Lesson ${lessonNumber} key information point 3`
-      ],
-      leadingQuestions: [
-        `1. What are the main concepts covered in Week ${week}?`,
-        `2. How do these concepts apply to real-world scenarios?`,
-        `3. What are the practical implications of this lesson?`
-      ],
-      reflectionQuestion: `Reflect on the key concepts from Week ${week}, Lesson ${lessonNumber}. How do they connect to your overall understanding of the course material?`
-    };
-  };
-
-  const extractSectionContent = (fullContent: string, sectionTitle: string): string => {
-    // Find the section in the content
-    const lines = fullContent.split('\n');
-    let sectionStart = -1;
-    let sectionEnd = lines.length;
-    
-    for (let i = 0; i < lines.length; i++) {
-      if (lines[i].includes(sectionTitle)) {
-        sectionStart = i;
-        break;
-      }
-    }
-    
-    if (sectionStart === -1) return '';
-    
-    // Find the end of this section (next ## header)
-    for (let i = sectionStart + 1; i < lines.length; i++) {
-      if (lines[i].startsWith('## ')) {
-        sectionEnd = i;
-        break;
-      }
-    }
-    
-    return lines.slice(sectionStart, sectionEnd).join('\n');
-  };
-
-  const extractCoreConcepts = (content: string, sectionTitle: string): string[] => {
-    const concepts: string[] = [];
-    const lines = content.split('\n');
-    
-    // Look for key concepts in the content
-    for (const line of lines) {
-      if (line.includes('→') || line.includes('**') || line.includes('x')) {
-        const cleanLine = line.replace(/^[→x\s-]+/, '').replace(/\*\*/g, '').trim();
-        if (cleanLine.length > 10 && cleanLine.length < 100) {
-          concepts.push(cleanLine);
-        }
-      }
-    }
-    
-    // If we don't have enough concepts, generate some based on the section title
-    if (concepts.length < 3) {
-      concepts.push(
-        `${sectionTitle}: Core definition and principles`,
-        `${sectionTitle}: Key characteristics and properties`,
-        `${sectionTitle}: Implementation considerations`,
-        `${sectionTitle}: Performance implications`
-      );
-    }
-    
-    return concepts.slice(0, 4);
-  };
-
-  const extractKeyTradeoffs = (content: string, sectionTitle: string): string[] => {
-    const tradeoffs: string[] = [];
-    const lines = content.split('\n');
-    
-    // Look for tradeoff-related content
-    for (const line of lines) {
-      if (line.toLowerCase().includes('tradeoff') || 
-          line.toLowerCase().includes('vs') || 
-          line.toLowerCase().includes('balance') ||
-          line.toLowerCase().includes('overhead')) {
-        const cleanLine = line.replace(/^[→x\s-]+/, '').replace(/\*\*/g, '').trim();
-        if (cleanLine.length > 10 && cleanLine.length < 100) {
-          tradeoffs.push(cleanLine);
-        }
-      }
-    }
-    
-    // If we don't have enough tradeoffs, generate some
-    if (tradeoffs.length < 3) {
-      tradeoffs.push(
-        `${sectionTitle}: Performance vs. complexity considerations`,
-        `${sectionTitle}: Memory and resource management tradeoffs`,
-        `${sectionTitle}: Scalability vs. simplicity`,
-        `${sectionTitle}: Security vs. usability`
-      );
-    }
-    
-    return tradeoffs.slice(0, 4);
-  };
-
-  const extractKeyInformation = (content: string, sectionTitle: string): string[] => {
-    const info: string[] = [];
-    const lines = content.split('\n');
-    
-    // Extract key information points
-    for (const line of lines) {
-      if (line.includes('→') || line.includes('**') || line.includes('x')) {
-        const cleanLine = line.replace(/^[→x\s-]+/, '').replace(/\*\*/g, '').trim();
-        if (cleanLine.length > 20 && cleanLine.length < 150) {
-          info.push(cleanLine);
-        }
-      }
-    }
-    
-    // If we don't have enough info, generate some
-    if (info.length < 3) {
-      info.push(
-        `${sectionTitle} is a fundamental concept in operating systems`,
-        `Understanding ${sectionTitle} is crucial for system design`,
-        `Practical applications of ${sectionTitle} in real systems`
-      );
-    }
-    
-    return info.slice(0, 3);
-  };
-
-  const generateLeadingQuestions = (sectionTitle: string, content: string): string[] => {
-    return [
-      `1. What is ${sectionTitle} and why is it important in operating systems?`,
-      `2. How does ${sectionTitle} relate to other OS concepts you've learned?`,
-      `3. What are the practical implications and applications of ${sectionTitle}?`
-    ];
-  };
 
   // Check URL parameters on every render to ensure we catch navigation changes
   useEffect(() => {
@@ -340,38 +172,39 @@ export default function CourseDetail({
 
   const generateCS162Lessons = async (week: number): Promise<Lesson[]> => {
     console.log('generateCS162Lessons called with week:', week);
-    // Generate lessons based on the CS162 study guides we have
     const weekLessons: Lesson[] = [];
     
     try {
-      // Fetch the study guide content for this week
-      console.log('Fetching content for week:', week);
-      const response = await fetch(`/api/cs162/week/${week}`);
+      // Fetch the lessons for this week
+      console.log('Fetching lessons for week:', week);
+      const response = await fetch(`/api/cs162/content/${week}`);
       if (response.ok) {
         const data = await response.json();
-        const content = data.content;
-        console.log('Content length for week', week, ':', content.length);
+        const lessons = data.lessons;
+        console.log('Found', lessons.length, 'lessons for week', week);
         
-        // Parse the content to extract lesson topics and group them into 2-3 lessons max
-        const lines = content.split('\n');
-        const allSections: string[] = [];
-        
-        for (const line of lines) {
-          if (line.startsWith('##') && !line.includes('CS162')) {
-            allSections.push(line.replace(/^#+\s*/, '').trim());
-          }
-        }
-        
-        // Group sections into 2-3 lessons
-        const groupedLessons = groupSectionsIntoLessons(allSections, week);
-        console.log('Generated', groupedLessons.length, 'lessons for week', week);
-        weekLessons.push(...groupedLessons);
+        // Convert the API response to our Lesson format
+        lessons.forEach((lesson: any, index: number) => {
+          const lessonId = lesson.id;
+          weekLessons.push({
+            id: lessonId,
+            title: lesson.title,
+            description: `Study guide content for ${lesson.title}`,
+            duration: 45,
+            difficulty: 'Beginner',
+            completed: isLessonCompleted(lessonId),
+            progress: getLessonProgress(lessonId),
+            week,
+            order: index + 1,
+            content: lesson.content // Store the HTML content
+          });
+        });
       }
     } catch (error) {
       console.error('Error generating CS162 lessons:', error);
     }
     
-    // If no lessons found, create default ones
+    // If no lessons found, create a default one
     if (weekLessons.length === 0) {
       weekLessons.push({
         id: `${week}-1`,
@@ -382,129 +215,14 @@ export default function CourseDetail({
         completed: false,
         progress: 0,
         week,
-        order: 1
+        order: 1,
+        content: ''
       });
     }
     
     return weekLessons;
   };
 
-  const groupSectionsIntoLessons = (sections: string[], week: number): Lesson[] => {
-    console.log('groupSectionsIntoLessons called with week:', week, 'and', sections.length, 'sections');
-    if (sections.length === 0) {
-      console.log('No sections found, creating default lesson for week:', week);
-      return [{
-        id: `${week}-1`,
-        title: `Week ${week} Overview`,
-        description: `Introduction to Week ${week} concepts`,
-        duration: 45,
-        difficulty: 'Beginner',
-        completed: false,
-        progress: 0,
-        week,
-        order: 1
-      }];
-    }
-
-    const lessons: Lesson[] = [];
-    
-    if (sections.length <= 3) {
-      // Use sections as-is
-      sections.forEach((section, index) => {
-        const lessonId = `${week}-${index + 1}`;
-        lessons.push({
-          id: lessonId,
-          title: section,
-          description: `Study guide content for ${section}`,
-          duration: 45,
-          difficulty: 'Beginner',
-          completed: isLessonCompleted(lessonId),
-          progress: getLessonProgress(lessonId),
-          week,
-          order: index + 1
-        });
-      });
-    } else if (sections.length <= 6) {
-      // Group into 2 lessons
-      const midPoint = Math.ceil(sections.length / 2);
-      const firstGroup = sections.slice(0, midPoint);
-      const secondGroup = sections.slice(midPoint);
-      
-      const firstLessonId = `${week}-1`;
-      lessons.push({
-        id: firstLessonId,
-        title: `Core Concepts: ${firstGroup[0]}`,
-        description: `Study guide covering ${firstGroup.join(', ')}`,
-        duration: 60,
-        difficulty: 'Beginner',
-        completed: false, // Will be updated after generation
-        progress: 0, // Will be updated after generation
-        week,
-        order: 1
-      });
-      
-      const secondLessonId = `${week}-2`;
-      lessons.push({
-        id: secondLessonId,
-        title: `Advanced Topics: ${secondGroup[0]}`,
-        description: `Study guide covering ${secondGroup.join(', ')}`,
-        duration: 60,
-        difficulty: 'Beginner',
-        completed: false, // Will be updated after generation
-        progress: 0, // Will be updated after generation
-        week,
-        order: 2
-      });
-    } else {
-      // Group into 3 lessons
-      const third = Math.ceil(sections.length / 3);
-      const firstGroup = sections.slice(0, third);
-      const secondGroup = sections.slice(third, third * 2);
-      const thirdGroup = sections.slice(third * 2);
-      
-      const firstLessonId = `${week}-1`;
-      lessons.push({
-        id: firstLessonId,
-        title: `Introduction: ${firstGroup[0]}`,
-        description: `Study guide covering ${firstGroup.join(', ')}`,
-        duration: 45,
-        difficulty: 'Beginner',
-        completed: false, // Will be updated after generation
-        progress: 0, // Will be updated after generation
-        week,
-        order: 1
-      });
-      
-      const secondLessonId = `${week}-2`;
-      lessons.push({
-        id: secondLessonId,
-        title: `Core Concepts: ${secondGroup[0]}`,
-        description: `Study guide covering ${secondGroup.join(', ')}`,
-        duration: 60,
-        difficulty: 'Beginner',
-        completed: false, // Will be updated after generation
-        progress: 0, // Will be updated after generation
-        week,
-        order: 2
-      });
-      
-      const thirdLessonId = `${week}-3`;
-      lessons.push({
-        id: thirdLessonId,
-        title: `Advanced Applications: ${thirdGroup[0]}`,
-        description: `Study guide covering ${thirdGroup.join(', ')}`,
-        duration: 60,
-        difficulty: 'Beginner',
-        completed: false, // Will be updated after generation
-        progress: 0, // Will be updated after generation
-        week,
-        order: 3
-      });
-    }
-    
-    console.log('Generated lessons for week', week, ':', lessons.length, 'lessons');
-    return lessons;
-  };
 
 
   const totalLessons = lessons.length;
@@ -703,135 +421,16 @@ export default function CourseDetail({
                           
                           <CollapsibleContent>
                             <CardContent className="space-y-6">
-                              {/* Learning Notes Section */}
+                              {/* Lesson Content */}
                               <div className="space-y-4">
-                                <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                                  <BookOpen className="h-4 w-4 text-blue-500" />
-                                  Learning Notes
-                                </h4>
-                                
-                                {(() => {
-                                  const content = generateLessonContent(lesson);
-                                  return (
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                      <div className="space-y-2">
-                                        <h5 className="font-medium text-gray-900">Core Concepts</h5>
-                                        <ul className="text-sm text-gray-600 space-y-1">
-                                          {content.coreConcepts.map((concept, index) => (
-                                            <li key={index}>• {concept}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                      
-                                      <div className="space-y-2">
-                                        <h5 className="font-medium text-gray-900">Key Tradeoffs</h5>
-                                        <ul className="text-sm text-gray-600 space-y-1">
-                                          {content.keyTradeoffs.map((tradeoff, index) => (
-                                            <li key={index}>• {tradeoff}</li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              {/* Problem Breakdown Section */}
-                              <div className="space-y-4">
-                                <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                                  <Target className="h-4 w-4 text-green-500" />
-                                  Problem Breakdown
-                                </h4>
-                                
-                                {(() => {
-                                  const content = generateLessonContent(lesson);
-                                  return (
-                                    <div className="space-y-3">
-                                      <Card className="border-l-4 border-l-blue-500">
-                                        <CardHeader className="py-3">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <CardTitle className="text-base">Part (a): Understanding Core Concepts</CardTitle>
-                                            </div>
-                                          </div>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                          <div className="space-y-2">
-                                            <h5 className="font-medium text-gray-900 flex items-center gap-2">
-                                              <CheckCircle className="h-4 w-4 text-blue-500" />
-                                              Key Information
-                                            </h5>
-                                            <ul className="text-sm text-gray-600 space-y-1 ml-6">
-                                              {content.keyInformation.map((info, index) => (
-                                                <li key={index}>• {info}</li>
-                                              ))}
-                                            </ul>
-                                          </div>
-                                          
-                                          <div className="space-y-2">
-                                            <h5 className="font-medium text-gray-900 flex items-center gap-2">
-                                              <TrendingUp className="h-4 w-4 text-green-500" />
-                                              Leading Questions
-                                            </h5>
-                                            <ol className="text-sm text-gray-600 space-y-1 ml-6">
-                                              {content.leadingQuestions.map((question, index) => (
-                                                <li key={index}>{question}</li>
-                                              ))}
-                                            </ol>
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                      
-                                      <Card className="border-l-4 border-l-green-500">
-                                        <CardHeader className="py-3">
-                                          <div className="flex items-center justify-between">
-                                            <div>
-                                              <CardTitle className="text-base">Part (b): Practical Applications</CardTitle>
-                                            </div>
-                                          </div>
-                                        </CardHeader>
-                                        <CardContent className="space-y-4">
-                                          <div className="space-y-2">
-                                            <h5 className="font-medium text-gray-900 flex items-center gap-2">
-                                              <CheckCircle className="h-4 w-4 text-blue-500" />
-                                              Key Information
-                                            </h5>
-                                            <ul className="text-sm text-gray-600 space-y-1 ml-6">
-                                              <li>• Real-world examples and practical applications</li>
-                                              <li>• Performance optimization techniques and tradeoffs</li>
-                                              <li>• Common problems and their solutions</li>
-                                            </ul>
-                                          </div>
-                                          
-                                          <div className="space-y-2">
-                                            <h5 className="font-medium text-gray-900 flex items-center gap-2">
-                                              <TrendingUp className="h-4 w-4 text-green-500" />
-                                              Leading Questions
-                                            </h5>
-                                            <ol className="text-sm text-gray-600 space-y-1 ml-6">
-                                              <li>1. How would you apply these concepts in practice?</li>
-                                              <li>2. What are the tradeoffs in real-world implementations?</li>
-                                              <li>3. How do these concepts scale in larger systems?</li>
-                                            </ol>
-                                          </div>
-                                        </CardContent>
-                                      </Card>
-                                    </div>
-                                  );
-                                })()}
-                              </div>
-
-                              {/* Check Understanding Section */}
-                              <div className="space-y-2">
-                                <h4 className="font-semibold text-gray-900 flex items-center gap-2">
-                                  <CheckCircle className="h-4 w-4 text-yellow-500" />
-                                  Check Understanding
-                                </h4>
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                  <p className="text-sm text-gray-700">
-                                    <strong>Reflection Question:</strong> {generateLessonContent(lesson).reflectionQuestion}
-                                  </p>
-                                </div>
+                                {lesson.content ? (
+                                  <div 
+                                    className="prose prose-sm max-w-none"
+                                    dangerouslySetInnerHTML={{ __html: lesson.content }}
+                                  />
+                                ) : (
+                                  <p className="text-sm text-gray-500 italic">No content available for this lesson.</p>
+                                )}
                               </div>
                               
                               {lesson.progress > 0 && (

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
+import { remark } from 'remark';
+import html from 'remark-html';
 
 export async function GET(
   request: NextRequest,
@@ -21,20 +23,35 @@ export async function GET(
     }
     
     // Read the study guide content
-    const content = fs.readFileSync(studyGuidePath, 'utf-8');
+    const fileContents = fs.readFileSync(studyGuidePath, 'utf-8');
     
-    // Parse the content into sections
-    const sections = parseStudyGuideContent(content);
+    // Split sections by "## " headers
+    const sections = fileContents.split(/^## /gm).filter(Boolean);
     
-    return NextResponse.json({
-      week: week,
-      content: content,
-      sections: sections,
-      metadata: {
-        totalSections: sections.length,
-        wordCount: content.split(/\s+/).length
-      }
+    // Filter out the main title section (starts with "# CS162")
+    const contentSections = sections.filter(section => {
+      const [titleLine] = section.split('\n');
+      return !titleLine.trim().startsWith('# CS162');
     });
+    
+    const lessons = await Promise.all(
+      contentSections.map(async (section, idx) => {
+        const [titleLine, ...contentLines] = section.split('\n');
+        const content = contentLines.join('\n');
+        
+        const processedContent = await remark()
+          .use(html)
+          .process(content);
+        
+        return {
+          id: `${week}-${idx + 1}`,
+          title: titleLine.trim(),
+          content: processedContent.toString(),
+        };
+      })
+    );
+    
+    return NextResponse.json({ lessons });
     
   } catch (error) {
     console.error('Error reading study guide:', error);
@@ -43,20 +60,4 @@ export async function GET(
       { status: 500 }
     );
   }
-}
-
-function parseStudyGuideContent(content: string): string[] {
-  // Split content by ## headers to get main sections
-  const sections = content
-    .split(/^## /m)
-    .filter(section => section.trim().length > 0)
-    .map(section => {
-      // Extract the section title (first line)
-      const lines = section.split('\n');
-      const title = lines[0].trim();
-      return title;
-    })
-    .filter(title => title.length > 0);
-  
-  return sections;
 }
