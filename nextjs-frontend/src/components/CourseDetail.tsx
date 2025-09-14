@@ -152,32 +152,6 @@ export default function CourseDetail({
 
   // Update lesson completion status after lessons are generated
 
-  const fetchLessons = async () => {
-    console.log('fetchLessons called for week:', selectedWeek);
-    console.log('fetchLessons: Current URL:', window.location.href);
-    console.log('fetchLessons: Search params:', Object.fromEntries(searchParams.entries()));
-    setIsLoading(true);
-    try {
-      // For courses with study guides (CS162, CS170, EECS126, CS61B), generate lessons from content
-      if (['CS162', 'CS170', 'EECS126', 'CS61B'].includes(courseCode)) {
-        const courseLessons = await generateLessons(selectedWeek, courseCode);
-        console.log('Generated lessons for week', selectedWeek, ':', courseLessons.length, 'lessons');
-        setLessons(courseLessons);
-      } else {
-        // For other courses, fetch from API
-        const response = await fetch(`/api/courses/${courseCode}/lessons?week=${selectedWeek}`);
-        if (response.ok) {
-          const data = await response.json();
-          setLessons(data.lessons);
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching lessons:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const generateLessons = async (week: number, courseCode: string): Promise<Lesson[]> => {
     console.log(`generateLessons called with week: ${week}, course: ${courseCode}`);
     const weekLessons: Lesson[] = [];
@@ -231,7 +205,31 @@ export default function CourseDetail({
     return weekLessons;
   };
 
-
+  const fetchLessons = async () => {
+    console.log('fetchLessons called for week:', selectedWeek);
+    console.log('fetchLessons: Current URL:', window.location.href);
+    console.log('fetchLessons: Search params:', Object.fromEntries(searchParams.entries()));
+    setIsLoading(true);
+    try {
+      // For courses with study guides (CS162, CS170, EECS126, CS61B), generate lessons from content
+      if (['CS162', 'CS170', 'EECS126', 'CS61B'].includes(courseCode)) {
+        const courseLessons = await generateLessons(selectedWeek, courseCode);
+        console.log('Generated lessons for week', selectedWeek, ':', courseLessons.length, 'lessons');
+        setLessons(courseLessons);
+      } else {
+        // For other courses, fetch from API
+        const response = await fetch(`/api/courses/${courseCode}/lessons?week=${selectedWeek}`);
+        if (response.ok) {
+          const data = await response.json();
+          setLessons(data.lessons);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching lessons:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const totalLessons = lessons.length;
   const completedLessons = lessons.filter(lesson => lesson.completed).length;

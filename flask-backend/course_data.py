@@ -1,4 +1,20 @@
 # Course data and prerequisite information
+
+# Detailed course information
+COURSE_DETAILS = {
+    "CS61B": {
+        "name": "Data Structures and Algorithms",
+        "description": "CS 61B Spring 2025 - Data Structures and Algorithms. A comprehensive course covering fundamental data structures, algorithms, and software engineering principles.",
+        "instructor": "Justin Yokota, Josh Hug",
+        "semester": "Spring 2025",
+        "units": 4,
+        "lecture_time": "1-2PM MWF, VLSB 2050 Zoom",
+        "website": "https://sp25.datastructur.es/",
+        "prerequisites": ["CS61A"],
+        "category": "CS Core"
+    }
+}
+
 COURSE_WEBSITES = {
     # CS Core Courses
     "CS61A": "https://cs61a.org",
@@ -168,12 +184,29 @@ COURSE_CATEGORIES = {
 
 def get_course_info(course_code):
     """Get course information including website and prerequisites"""
-    return {
-        "code": course_code,
-        "website": COURSE_WEBSITES.get(course_code, ""),
-        "prerequisites": PREREQ_GRAPH.get(course_code, []),
-        "category": get_course_category(course_code)
-    }
+    # Check if we have detailed information for this course
+    if course_code in COURSE_DETAILS:
+        details = COURSE_DETAILS[course_code]
+        return {
+            "code": course_code,
+            "name": details.get("name", ""),
+            "description": details.get("description", ""),
+            "instructor": details.get("instructor", ""),
+            "semester": details.get("semester", ""),
+            "units": details.get("units", 0),
+            "lecture_time": details.get("lecture_time", ""),
+            "website": details.get("website", COURSE_WEBSITES.get(course_code, "")),
+            "prerequisites": details.get("prerequisites", PREREQ_GRAPH.get(course_code, [])),
+            "category": details.get("category", get_course_category(course_code))
+        }
+    else:
+        # Fallback to basic information
+        return {
+            "code": course_code,
+            "website": COURSE_WEBSITES.get(course_code, ""),
+            "prerequisites": PREREQ_GRAPH.get(course_code, []),
+            "category": get_course_category(course_code)
+        }
 
 def get_course_category(course_code):
     """Get the category for a course"""
