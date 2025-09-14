@@ -1,10 +1,16 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
-import InteractiveGraph from '@/components/InteractiveGraph';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+
+// Dynamically import react-graph-vis to avoid SSR issues
+const Graph = dynamic(() => import('react-graph-vis'), { 
+  ssr: false,
+  loading: () => <div className="flex items-center justify-center h-full">Loading graph...</div>
+});
 
 // Match the structure from knowledge_graph.json
 interface RawTopicData {
@@ -60,7 +66,7 @@ export default function GraphPage() {
       });
       setProcessedKnowledgeGraph(processedData);
       
-      // Set first topic as selected by default
+      // Set first topic as selected by default for highlighting
       const firstTopic = Object.keys(rawData)[0];
       if (firstTopic) {
         setSelectedTopic(firstTopic);
@@ -92,25 +98,191 @@ export default function GraphPage() {
   // Always show the complete graph with all 214 topics
   const displayKnowledgeGraph = processedKnowledgeGraph;
 
-  // Calculate graph statistics
-  const getGraphStats = () => {
-    if (!displayKnowledgeGraph || !rawKnowledgeGraph) return { nodes: 0, edges: 0, courses: 0 };
-    
-    const nodes = Object.keys(displayKnowledgeGraph).length;
-    let edges = 0;
-    const coursesSet = new Set<string>();
-    
-    Object.entries(displayKnowledgeGraph).forEach(([topicName, topicData]) => {
-      edges += topicData.prereqs.length;
-      if (rawKnowledgeGraph[topicName]) {
-        coursesSet.add(rawKnowledgeGraph[topicName].course);
-      }
+  // Color nodes by course
+  const getNodeColor = useCallback((course: string) => {
+    const colors: Record<string, { background: string; border: string; highlight: string }> = {
+      'CS61A': { background: '#FF6B6B', border: '#E55A5A', highlight: '#FF8E8E' },
+      'CS61B': { background: '#4ECDC4', border: '#45B7B8', highlight: '#6BCCC2' },
+      'CS61C': { background: '#45B7D1', border: '#3498DB', highlight: '#68C3DD' },
+      'CS70': { background: '#96CEB4', border: '#7FB069', highlight: '#A8D8BC' },
+      'CS160': { background: '#FFEAA7', border: '#FDCB6E', highlight: '#FFF2C7' },
+      'CS162': { background: '#DDA0DD', border: '#D63031', highlight: '#E8B4E8' },
+      'CS164': { background: '#98D8C8', border: '#00B894', highlight: '#AAE0D0' },
+      'CS168': { background: '#F7DC6F', border: '#F39C12', highlight: '#F9E79F' },
+      'CS169': { background: '#BB8FCE', border: '#9B59B6', highlight: '#C7A2D6' },
+      'CS170': { background: '#85C1E9', border: '#3498DB', highlight: '#97CBEF' },
+      'CS172': { background: '#F8C471', border: '#E67E22', highlight: '#FACD7D' },
+      'CS174': { background: '#82E0AA', border: '#00B894', highlight: '#94E6B2' },
+      'CS184': { background: '#F1948A', border: '#E74C3C', highlight: '#F3A696' },
+      'CS186': { background: '#85C1E9', border: '#2980B9', highlight: '#97CBEF' },
+      'CS188': { background: '#D7BDE2', border: '#8E44AD', highlight: '#DFCAE8' },
+      'CS189': { background: '#A9DFBF', border: '#27AE60', highlight: '#B5E3C7' }
+    };
+    return colors[course] || { 
+      background: '#BDC3C7', 
+      border: '#95A5A6', 
+      highlight: '#CDD4D7' 
+    };
+  }, []);
+
+  // Create complete graph data with ALL nodes and edges
+  const completeGraphData = useMemo(() => {
+    if (!displayKnowledgeGraph || !rawKnowledgeGraph) return { nodes: [], edges: [] };
+
+    // Create nodes for ALL topics
+    const nodes = Object.entries(displayKnowledgeGraph).map(([topicName, topicData]) => {
+      const nodeColors = getNodeColor(topicData.course);
+      const isSelected = topicName === selectedTopic;
+      
+      return {
+        id: topicName,
+        label: topicName.length > 25 ? topicName.substring(0, 25) + '...' : topicName,
+        title: `${topicName}\nCourse: ${topicData.course}\nOrder: ${topicData.order}\nPrereqs: ${topicData.prereqs.length}`,
+        color: {
+          background: nodeColors.background,
+          border: isSelected ? '#2C3E50' : nodeColors.border,
+          highlight: {
+            background: nodeColors.highlight,
+            border: '#2C3E50'
+          },
+          hover: {
+            background: nodeColors.highlight,
+            border: nodeColors.border
+          }
+        },
+        size: isSelected ? 25 : 15,
+        font: {
+          size: isSelected ? 14 : 10,
+          color: '#2C3E50',
+          face: 'Inter, sans-serif',
+          strokeWidth: 1,
+          strokeColor: '#FFFFFF'
+        },
+        borderWidth: isSelected ? 3 : 1,
+        shadow: {
+          enabled: true,
+          color: 'rgba(0,0,0,0.1)',
+          size: isSelected ? 10 : 5,
+          x: 1,
+          y: 1
+        }
+      };
     });
-    
-    return { nodes, edges, courses: coursesSet.size };
+
+    // Create edges for ALL prerequisite relationships
+    const edges: any[] = [];
+    Object.entries(displayKnowledgeGraph).forEach(([topicName, topicData]) => {
+      topicData.prereqs.forEach(prereq => {
+        if (displayKnowledgeGraph[prereq]) {
+          edges.push({
+            from: prereq,
+            to: topicName,
+            arrows: {
+              to: {
+                enabled: true,
+                scaleFactor: 0.8,
+                type: 'arrow'
+              }
+            },
+            color: {
+              color: '#94A3B8',
+              highlight: '#64748B',
+              hover: '#475569',
+              opacity: 0.7
+            },
+            width: 1,
+            smooth: {
+              enabled: true,
+              type: 'continuous',
+              roundness: 0.2
+            },
+            shadow: {
+              enabled: true,
+              color: 'rgba(0,0,0,0.1)',
+              size: 3,
+              x: 1,
+              y: 1
+            }
+          });
+        }
+      });
+    });
+
+    return { nodes, edges };
+  }, [displayKnowledgeGraph, rawKnowledgeGraph, selectedTopic, getNodeColor]);
+
+  // Graph options for vis.js
+  const graphOptions = useMemo(() => ({
+    layout: {
+      improvedLayout: true,
+      hierarchical: false
+    },
+    physics: {
+      enabled: true,
+      stabilization: { 
+        enabled: true, 
+        iterations: 200,
+        updateInterval: 25
+      },
+      barnesHut: {
+        gravitationalConstant: -8000,
+        centralGravity: 0.3,
+        springLength: 95,
+        springConstant: 0.04,
+        damping: 0.09,
+        avoidOverlap: 0.1
+      }
+    },
+    interaction: {
+      dragNodes: true,
+      dragView: true,
+      zoomView: true,
+      selectConnectedEdges: false,
+      hover: true,
+      hoverConnectedEdges: true,
+      tooltipDelay: 300
+    },
+    nodes: {
+      shape: 'dot',
+      scaling: {
+        min: 10,
+        max: 30
+      }
+    },
+    edges: {
+      smooth: {
+        enabled: true,
+        type: 'continuous'
+      }
+    }
+  }), []);
+
+  // Graph events
+  const graphEvents = {
+    select: (event: any) => {
+      const { nodes } = event;
+      if (nodes.length > 0) {
+        setSelectedTopic(nodes[0]);
+      }
+    }
   };
 
-  const graphStats = getGraphStats();
+  // Calculate graph statistics from complete graph data
+  const graphStats = useMemo(() => {
+    if (!completeGraphData) return { nodes: 0, edges: 0, courses: 0 };
+    
+    const nodes = completeGraphData.nodes.length;
+    const edges = completeGraphData.edges.length;
+    const coursesSet = new Set<string>();
+    
+    if (rawKnowledgeGraph) {
+      Object.values(rawKnowledgeGraph).forEach(topicData => {
+        coursesSet.add(topicData.course);
+      });
+    }
+    
+    return { nodes, edges, courses: coursesSet.size };
+  }, [completeGraphData, rawKnowledgeGraph]);
 
   if (loading) {
     return (
@@ -174,84 +346,6 @@ export default function GraphPage() {
         </div>
 
 
-        {/* Topic Selector */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Select Topic to Explore</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <select
-              value={selectedTopic || ''}
-              onChange={(e) => handleTopicChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="">Select a topic...</option>
-              {allTopics.map(topicName => (
-                <option key={topicName} value={topicName}>
-                  {topicName} ({rawKnowledgeGraph[topicName].course})
-                </option>
-              ))}
-            </select>
-            
-            {selectedTopic && rawKnowledgeGraph[selectedTopic] && (
-              <div className="mt-4 p-4 bg-gray-50 rounded-lg">
-                <h3 className="font-semibold text-lg">{selectedTopic}</h3>
-                <div className="flex gap-2 mt-2">
-                  <Badge>{rawKnowledgeGraph[selectedTopic].course}</Badge>
-                  <Badge variant="secondary">Order: {rawKnowledgeGraph[selectedTopic].order}</Badge>
-                  <Badge variant="outline">
-                    {rawKnowledgeGraph[selectedTopic].prereqs.length} Prerequisites
-                  </Badge>
-                </div>
-                {rawKnowledgeGraph[selectedTopic].prereqs.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-sm font-medium text-gray-700">Prerequisites:</p>
-                    <div className="flex flex-wrap gap-1 mt-1">
-                      {rawKnowledgeGraph[selectedTopic].prereqs.map(prereq => (
-                        <Badge 
-                          key={prereq} 
-                          variant="outline" 
-                          className="text-xs cursor-pointer hover:bg-gray-100"
-                          onClick={() => handleTopicChange(prereq)}
-                        >
-                          {prereq}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Show topics that depend on this one */}
-                {(() => {
-                  const dependents = Object.entries(rawKnowledgeGraph)
-                    .filter(([_, topicData]) => topicData.prereqs.includes(selectedTopic))
-                    .map(([topicName]) => topicName);
-                  
-                  if (dependents.length > 0) {
-                    return (
-                      <div className="mt-2">
-                        <p className="text-sm font-medium text-gray-700">Topics that depend on this:</p>
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {dependents.map(dependent => (
-                            <Badge 
-                              key={dependent} 
-                              variant="outline" 
-                              className="text-xs cursor-pointer hover:bg-blue-50 border-blue-200"
-                              onClick={() => handleTopicChange(dependent)}
-                            >
-                              {dependent}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Interactive Graph */}
         <Card>
@@ -271,24 +365,22 @@ export default function GraphPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {selectedTopic && displayKnowledgeGraph ? (
+            {displayKnowledgeGraph && completeGraphData.nodes.length > 0 ? (
               <div className="h-[900px] w-full">
-                <InteractiveGraph
-                  knowledgeGraph={displayKnowledgeGraph}
-                  selectedTopic={selectedTopic}
-                  onNodeSelect={handleNodeSelect}
-                  onTopicChange={handleTopicChange}
-                  width="100%"
-                  height="900px"
-                  showControls={true}
+                <Graph
+                  graph={completeGraphData}
+                  options={graphOptions}
+                  events={graphEvents}
+                  style={{ height: '100%', width: '100%' }}
                 />
               </div>
             ) : (
               <div className="h-96 flex items-center justify-center text-gray-500">
                 <div className="text-center">
-                  <p className="text-lg mb-2">Select a topic to visualize the complete graph</p>
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                  <p className="text-lg mb-2">Loading complete knowledge graph...</p>
                   <p className="text-sm">
-                    The graph will show all {totalTopics} topics with their complete prerequisite network
+                    Preparing all {totalTopics} topics with their prerequisite relationships
                   </p>
                 </div>
               </div>
