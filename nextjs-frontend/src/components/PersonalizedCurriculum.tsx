@@ -48,8 +48,10 @@ export default function PersonalizedCurriculum() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchCurriculum();
-  }, []);
+    if (session?.user?.email) {
+      fetchCurriculum();
+    }
+  }, [session]);
 
   const fetchCurriculum = async () => {
     try {
@@ -226,17 +228,15 @@ export default function PersonalizedCurriculum() {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        {courseInfo.website && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full"
-            onClick={() => window.open(courseInfo.website, '_blank')}
-          >
-            <ExternalLink className="mr-2 h-4 w-4" />
-            View Course Materials
-          </Button>
-        )}
+        <Button
+          variant="outline"
+          size="sm"
+          className="w-full"
+          onClick={() => window.location.href = `/courses/${courseCode}`}
+        >
+          <BookOpen className="mr-2 h-4 w-4" />
+          {courseCode === 'CS162' ? 'View Personalized Study Guide' : 'View Course Materials'}
+        </Button>
         
         {courseInfo.prerequisites.length > 0 && (
           <div>

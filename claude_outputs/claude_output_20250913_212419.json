@@ -1,0 +1,25 @@
+{
+  "id": "msg_01MH7qGoAqu7eCWUiFuBWX6x",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-opus-4-1-20250805",
+  "content": [
+    {
+      "type": "text",
+      "text": "# CS162 Lecture 16: Memory 3 - Demand Paging Study Notes\n\n## → Overview\nThis lecture covers advanced memory management topics including handling large page tables, the Translation Lookaside Buffer (TLB), and demand paging mechanisms.\n\n## → Limitations of Simple Paging\n\n**Space Overhead with 64-bit Address Space:**\n- 32-bit systems: 4MB page table per process (manageable)\n- 64-bit systems: 36 petabytes per process (impossible!)\n- Problem: Address space is sparse - most entries map to nothing\n\n**Performance Issues:**\n- Time overhead: Every memory access requires accessing page table first\n- Internal fragmentation: 4KB pages waste space\n\n## → Multi-Level Page Tables\n\n**2-Level Paging Structure:**\n- Divides virtual address into: Outer Page # | Inner Page # | Offset\n- Tree structure allows marking entire regions as invalid\n- Saves space when address space is sparse\n\n**x86 32-bit Example:**\n- 10 bits outer page, 10 bits inner page, 12 bits offset\n- Each inner page table fits in single 4KB page\n- Can share entire regions between processes\n\n**x86 64-bit Uses 4-Level Page Tables:**\n- 48-bit virtual addresses (not full 64 bits)\n- Four 9-bit indices + 12-bit offset\n- Each level uses 4KB pages\n\n## → Alternative Page Table Designs\n\n**Paged Segmentation:**\n- Uses segments for top level, paging within segments\n- Used in x86 32-bit systems\n\n**Inverted Page Table:**\n- Single table with entry per physical page\n- Size proportional to physical memory (not virtual)\n- Uses hash table for lookups\n- Disadvantage: No cache locality\n\n## → Translation Lookaside Buffer (TLB)\n\n**Purpose:**\n- Hardware cache for virtual→physical translations\n- Avoids multiple memory accesses for page table walks\n- Exploits locality of reference\n\n**TLB Management:**\n- Context switch requires TLB flush or ProcessID tags\n- Page table changes require TLB consistency updates\n- Hit rate critical for performance\n\n## → Caching and Memory Hierarchy\n\n**Memory Access Time:**\n- AMAT = (Hit Rate × Hit Time) + (Miss Rate × Miss Time)\n- 90% hit rate: AMAT = 11ns\n- 99% hit rate: AMAT = 2.01ns\n\n**Locality Principles:**\n- Temporal locality: Recently accessed items likely accessed again\n- Spatial locality: Nearby items likely accessed together\n\n## → Demand Paging\n\n**Core Concept:**\n- Use main memory as cache for disk\n- Pages loaded only when needed\n- Illusion of infinite memory\n\n**Page Table Entry (PTE) Fields:**\n- P: Present bit (page in memory)\n- D: Dirty bit (page modified)\n- If not present, PTE contains disk location\n\n## → Page Fault Handling\n\n**Steps on Page Fault:**\n1. MMU traps to OS\n2. OS selects victim page if needed\n3. Write victim to disk if dirty\n4. Load new page from disk\n5. Update page table entry\n6. Invalidate TLB entry\n7. Retry faulting instruction\n\n**Uses of Page Faults:**\n- Stack/heap extension\n- Copy-on-write for fork()\n- Demand loading for exec()\n- Memory-mapped files\n\n## → Virtual Address Space Management\n\n**Backing Store:**\n- Every utilized page backed by disk block\n- Swap file stores non-resident pages\n- OS maintains mapping: (PID, page#) → disk_block\n\n**Process Address Space:**\n- Code, data, heap, stack regions\n- Page table maps entire VAS\n- Resident pages mapped to memory frames\n- Non-resident pages tracked on disk\n\n## → Performance Considerations\n\n**Effective Access Time:**\n- Example: 200ns memory, 8ms page fault\n- 1 fault per 1000 accesses = 40× slowdown\n- For <10% slowdown: need <1 fault per 400,000 accesses\n\n**Working Set Model:**\n- Programs transition through working sets\n- Subset of address space actively used\n- Important for memory allocation decisions\n\n## → Page Replacement Policies\n\n**Types of Misses:**\n- Compulsory: First access to page\n- Capacity: Not enough memory\n- Policy: Premature eviction\n\n**Basic Policies:**\n- **FIFO:** Remove oldest page (simple but ineffective)\n- **Random:** Unpredictable, used in TLBs\n- **MIN:** Replace page used furthest in future (optimal but impossible)\n\n## → Key Design Decisions\n\n**Memory Allocation:**\n- How many frames per process?\n- Fairness vs. utilization trade-offs\n- Priority-based allocation\n\n**Free Frame Management:**\n- Maintain free list\n- Background \"reaper\" process\n- Write back dirty pages proactively\n- Zero unused pages"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 11236,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 0
+    },
+    "output_tokens": 1162,
+    "service_tier": "standard"
+  }
+}

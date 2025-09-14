@@ -339,6 +339,59 @@ def upload_transcript():
     except Exception as e:
         return jsonify({'error': f'Error processing PDF: {str(e)}'}), 500
 
+@transcript_bp.route('/existing', methods=['GET'])
+@jwt_required()
+def get_existing_transcript():
+    """Get existing transcript data for the user"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        if not user.transcript_uploaded or not user.transcript_data:
+            return jsonify({'error': 'No transcript data found'}), 404
+        
+        # Parse the stored transcript data
+        parsed_data = json.loads(user.transcript_data)
+        
+        return jsonify({
+            'transcript_uploaded': user.transcript_uploaded,
+            'parsed_data': parsed_data,
+            'uploaded_at': user.updated_at.isoformat()
+        }), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@transcript_bp.route('/clear', methods=['POST'])
+@jwt_required()
+def clear_transcript():
+    """Clear existing transcript data for the user"""
+    try:
+        user_id = get_jwt_identity()
+        user = User.query.get(user_id)
+        
+        if not user:
+            return jsonify({'error': 'User not found'}), 404
+        
+        # Clear transcript data
+        user.transcript_uploaded = False
+        user.transcript_data = None
+        user.curriculum_generated = False
+        user.updated_at = datetime.utcnow()
+        
+        # Clear existing user courses
+        UserCourse.query.filter_by(user_id=user_id).delete()
+        
+        db.session.commit()
+        
+        return jsonify({'message': 'Transcript data cleared successfully'}), 200
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @transcript_bp.route('/curriculum', methods=['GET'])
 @jwt_required()
 def get_curriculum():

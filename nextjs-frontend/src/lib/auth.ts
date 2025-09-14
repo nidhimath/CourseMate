@@ -29,7 +29,8 @@ export const authOptions: NextAuthOptions = {
           if (response.ok) {
             const data = await response.json()
             // Store the backend JWT token in the user object
-            user.backendToken = data.access_token
+            const userWithToken = user as any
+            userWithToken.backendToken = data.access_token
             return true
           }
         } catch (error) {
@@ -39,9 +40,9 @@ export const authOptions: NextAuthOptions = {
       return true
     },
     async session({ session, token }) {
-      if (session.user) {
-        session.user.id = token.sub
-        session.accessToken = token.backendToken
+      if (session.user && token.sub) {
+        (session.user as any).id = token.sub as string
+        (session as any).accessToken = token.backendToken
       }
       return session
     },
