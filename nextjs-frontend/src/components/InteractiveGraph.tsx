@@ -48,6 +48,9 @@ interface NodeData {
     face: string;
     strokeWidth: number;
     strokeColor: string;
+    align: string;
+    multi: string;
+    bold: boolean;
   };
   borderWidth: number;
   shadow: {
@@ -79,6 +82,7 @@ interface EdgeData {
     opacity: number;
   };
   width: number;
+  dashes?: boolean | number[];
   smooth: {
     enabled: boolean;
     type: string;
@@ -91,6 +95,8 @@ interface EdgeData {
     x: number;
     y: number;
   };
+  hoverWidth?: (width: number) => number;
+  selectionWidth?: (width: number) => number;
 }
 
 interface GraphData {
@@ -123,6 +129,7 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
   onTopicChange
 }) => {
   const [selectedNode, setSelectedNode] = useState<NodeData | null>(null);
+  const [network, setNetwork] = useState<any>(null);
 
   // Color nodes by course with prettier gradients
   const getNodeColor = useCallback((course: string): NodeColor => {
@@ -180,7 +187,7 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
       
       return {
         id: topicName,
-        label: topicName.length > 25 ? topicName.substring(0, 25) + '...' : topicName,
+        label: topicName.length > 20 ? topicName.replace(/(.{20})/g, '$1\n').trim() : topicName,
         title: `${topicName}\nCourse: ${topicData.course}\nOrder: ${topicData.order}`, // Enhanced tooltip
         color: {
           background: nodeColors.background,
@@ -196,11 +203,14 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
         },
         size: isMainTopic ? 30 : 18,
         font: {
-          size: isMainTopic ? 16 : 13,
+          size: isMainTopic ? 16 : 14,
           color: '#2C3E50',
           face: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
           strokeWidth: isMainTopic ? 3 : 2,
-          strokeColor: '#FFFFFF'
+          strokeColor: '#FFFFFF',
+          align: 'center',
+          multi: 'html',
+          bold: isMainTopic
         },
         borderWidth: isMainTopic ? 4 : 2,
         shadow: {
@@ -221,34 +231,44 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
       if (node.prereqs && Array.isArray(node.prereqs)) {
         node.prereqs.forEach(prereq => {
           if (relatedTopics.has(prereq)) {
+            // Determine if this is a hard or soft prerequisite based on course relationships
+            const isHardPrereq = true; // For now, treat all as hard prereqs
+            
             edges.push({
               from: prereq,
               to: node.id,
               arrows: {
                 to: {
                   enabled: true,
-                  scaleFactor: 1.2,
+                  scaleFactor: 1.5,
                   type: 'arrow'
-                }
+                },
               },
               color: {
-                color: '#7F8C8D',
-                highlight: '#3498DB',
-                hover: '#3498DB',
-                opacity: 0.8
+                color: isHardPrereq ? '#2980B9' : '#95A5A6',
+                highlight: '#E74C3C',
+                hover: '#E74C3C',
+                opacity: 0.9
               },
-              width: 2,
+              width: isHardPrereq ? 3 : 2,
+              dashes: isHardPrereq ? false : [5, 5], // Dashed for soft dependencies
               smooth: {
-                enabled: true,
-                type: 'dynamic',
-                roundness: 0.5
+                enabled: false, // Straight edges for clarity
+                type: 'straightCross',
+                roundness: 0
               },
               shadow: {
                 enabled: true,
-                color: 'rgba(0,0,0,0.1)',
-                size: 3,
-                x: 1,
-                y: 1
+                color: 'rgba(0,0,0,0.15)',
+                size: 4,
+                x: 2,
+                y: 2
+              },
+              hoverWidth: function(width: number) {
+                return width + 2;
+              },
+              selectionWidth: function(width: number) {
+                return width + 1;
               }
             });
           }
@@ -264,15 +284,16 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
       improvedLayout: true,
       clusterThreshold: 150,
       hierarchical: {
-        enabled: false,
-        levelSeparation: 150,
-        nodeSpacing: 100,
-        treeSpacing: 200,
+        enabled: true,
+        levelSeparation: 200,
+        nodeSpacing: 150,
+        treeSpacing: 250,
         blockShifting: true,
         edgeMinimization: true,
         parentCentralization: true,
-        direction: 'UD',
-        sortMethod: 'directed'
+        direction: 'UD', // Top-down for prerequisite flow
+        sortMethod: 'directed',
+        shakeTowards: 'roots'
       }
     },
     physics: {
@@ -282,12 +303,12 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
         updateInterval: 25
       },
       barnesHut: {
-        gravitationalConstant: -8000,
-        centralGravity: 0.3,
-        springLength: 95,
-        springConstant: 0.04,
-        damping: 0.09,
-        avoidOverlap: 0.1
+        gravitationalConstant: -12000,
+        centralGravity: 0.4,
+        springLength: 180, // Increased for better spacing
+        springConstant: 0.02,
+        damping: 0.12,
+        avoidOverlap: 0.2
       },
       maxVelocity: 50,
       minVelocity: 0.1,
@@ -298,15 +319,21 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
     nodes: {
       shape: 'dot',
       scaling: {
-        min: 15,
-        max: 40,
+        min: 20,
+        max: 45,
         label: {
           enabled: true,
-          min: 12,
-          max: 18,
-          maxVisible: 30,
-          drawThreshold: 5
+          min: 14,
+          max: 20,
+          maxVisible: 35,
+          drawThreshold: 3
         }
+      },
+      margin: {
+        top: 10,
+        right: 10,
+        bottom: 10,
+        left: 10
       },
       chosen: {
         node: function(values: any, id: string, selected: boolean, hovering: boolean) {
@@ -318,14 +345,29 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
     edges: {
       width: 2,
       smooth: {
-        enabled: true,
-        type: 'dynamic',
-        roundness: 0.5
+        enabled: false, // Straight edges by default
+        type: 'straightCross'
+      },
+      arrows: {
+        to: {
+          enabled: true,
+          scaleFactor: 1.2
+        }
       },
       chosen: {
         edge: function(values: any, id: string, selected: boolean, hovering: boolean) {
           values.width = values.width * 1.5;
+          values.color = '#E74C3C'; // Red highlight on selection
         }
+      },
+      hoverWidth: function(width: number) {
+        return width + 1;
+      },
+      font: {
+        size: 12,
+        color: '#2C3E50',
+        strokeWidth: 2,
+        strokeColor: '#FFFFFF'
       }
     },
     interaction: {
@@ -373,6 +415,37 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
     }
   };
 
+  const zoomToFit = (): void => {
+    if (network) {
+      network.fit({
+        animation: {
+          duration: 1000,
+          easingFunction: 'easeInOutCubic'
+        }
+      });
+    }
+  };
+
+  const zoomIn = (): void => {
+    if (network) {
+      const scale = network.getScale();
+      network.moveTo({
+        scale: scale * 1.2,
+        animation: { duration: 300, easingFunction: 'easeInOutCubic' }
+      });
+    }
+  };
+
+  const zoomOut = (): void => {
+    if (network) {
+      const scale = network.getScale();
+      network.moveTo({
+        scale: scale * 0.8,
+        animation: { duration: 300, easingFunction: 'easeInOutCubic' }
+      });
+    }
+  };
+
   const closeNodeInfo = (): void => {
     setSelectedNode(null);
   };
@@ -391,15 +464,29 @@ const InteractiveGraph: React.FC<InteractiveGraphProps> = ({
           <div className={styles.currentTopicDisplay}>
             Current Topic: <strong>{selectedTopic}</strong>
           </div>
+          
+          {/* Zoom Controls */}
+          <div className={styles.zoomControls}>
+            <button onClick={zoomIn} className={styles.zoomButton} title="Zoom In">
+              +
+            </button>
+            <button onClick={zoomToFit} className={styles.zoomButton} title="Fit to Screen">
+              ⌂
+            </button>
+            <button onClick={zoomOut} className={styles.zoomButton} title="Zoom Out">
+              −
+            </button>
+          </div>
         </div>
       )}
       
-      <div className={styles.graphVisualization} style={{ width, height }}>
+      <div className={styles.graphVisualizationGlass} style={{ width, height }}>
         <Graph
           graph={graphData}
           options={options}
           events={events}
           style={{ height: '100%', width: '100%' }}
+          getNetwork={(net: any) => setNetwork(net)}
         />
       </div>
 
